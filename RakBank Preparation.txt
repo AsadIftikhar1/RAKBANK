@@ -1,0 +1,2318 @@
+In Optimizely there is response caching and request caching this is basic .net standard features
+
+OpenID Connect is used for the Headless hit to Optimizely cms with content Delivery api
+
+There is also Media caching
+
+In Optimizely cms there is ContentDeliveryConverter by this every request coming from Next js will be automatically map to the property need to check will the class name also passed or not.
+
+Forms remaining
+
+
+
+SWR
+Using Next Session
+[...page]  --> Slug
+SessionProvider next
+For every page there will be different tsx
+Content Delivery API
+Do we need to build the project to get the component on the js level
+For on page editing this is used               <EditableField field="description">
+export const CampaignOfferListing: IContentComponent<any> = (props: any) => {
+             {...params}
+			 
+			 
+			 export const Cms12NextAuthOptions: NextAuthOptions = {
+    providers: [
+        Cms12OidcAuthentication({
+            host: OptimizelyHost,
+            clientId: OptimizelyClientId,
+            // clientSecret: OptimizeLyClientSecret
+        }),
+    ],
+    callbacks: {
+        jwt: async ({ token, account, user }) => {
+            if (account && user) {
+                const newToken = {
+                    accessToken: account.access_token,
+                    refreshToken: account.refresh_token,
+                    accessTokenExpires: (account.expires_at ?? 0) * 1000,
+                    scope: account.scope ?? '',
+                    user
+                }
+                return newToken
+            }
+
+            const now = Date.now()
+            const accessTokenExpires = (token.accessTokenExpires as number | undefined) ?? 0
+            if (accessTokenExpires <= now) {
+                const newToken = await refreshToken(OptimizelyHost, token.refreshToken as string, OptimizelyClientId)
+                if (isRefreshTokenError(newToken))
+                    token.error = newToken.error
+                else
+                    return {
+                        ...token,
+                        error: null,
+                        accessToken: newToken.access_token,
+                        refreshToken: newToken.refresh_token,
+                        accessTokenExpires: Date.now() + ((newToken.expires_in ?? 0) * 1000),
+                    }
+            }
+            return token
+        },
+
+        session: ({ session, user, token }) => {
+            if ((session as any).error) {
+                return session;
+            }
+            session.user = user ?? token.user;
+            (session as any).token = token;
+            return session
+        },
+    },
+    cookies: {
+        sessionToken: {
+            name: "OptiCMS.Session",
+            options: CookieOptions,
+        },
+        callbackUrl: {
+            name: "OptiCMS.Callback",
+            options: { ...CookieOptions }
+        },
+        csrfToken: {
+            name: "OptiCMS.CSRFToken",
+            options: CookieOptions
+        },
+        pkceCodeVerifier: {
+            name: "OptiCMS.next-auth.pkce.code_verifier",
+            options: CookieOptions
+        },
+        state: {
+            name: "OptiCMS.next-auth.state",
+            options: CookieOptions
+        },
+    }
+}
+
+const ModalCompareTool = (props: ModalCompareToolProps) => {
+  let backdropRoot = document.getElementById("backdrop-root");
+  let overlayRoot = document.getElementById("overlay-root");
+
+  return (
+    <>
+      {backdropRoot &&
+        ReactDOM.createPortal(
+          <Backdrop onClickClose={props.onClickClose} />,
+          backdropRoot
+        )}
+      {overlayRoot &&
+        ReactDOM.createPortal(<ModalOverlay {...props} />, overlayRoot)}
+    </>
+  );
+};
+
+Promise
+Index.ts
+OnPageEditing is the Hook in next
+
+import {
+    getServerSideProps as baseGetServerSideProps,
+    OptimizelyCmsPage,
+} from '@optimizely/cms/components';
+
+export const getServerSideProps: typeof baseGetServerSideProps = async ctx => {
+    var props = await baseGetServerSideProps(ctx)
+    return props
+}
+
+export default OptimizelyCmsPage;
+
+Schema.d.ts will be automatically modified
+
+Babel
+eslint
+Webpack
+Vanilla
+
+AddOpenIDConnect in startup.cs
+
+
+https://world.optimizely.com/blogs/Minesh-Shah/Dates/2023/11/a-quick-guide-to-using-the-content-management-api-and-openid-connect-authentication/
+	
+	https://buildoptimizely.com/episerver/episerver-add-a-copy-preview-link-to-the-navigation-pane/?_gl=1*128q6oz*_gcl_au*MTg2MDcxMTc2OC4xNzE4MTM1Njg2LjE5OTkwOTg1MTUuMTcxOTIxNjAxNC4xNzE5MjE2MDEz*_ga*MTg2ODQ5ODk2My4xNzEwMzUzNzg3*_ga_C7SLJ6HMJ5*MTcxOTkyMjY5OC42MzUuMS4xNzE5OTIzNDY1LjYwLjAuMA
+	
+	https://github.com/CodeArtDK/CodeArt.Optimizely.PropertyInheritance/tree/main/src/SampleSite/Business/Rendering
+	
+	https://optimizely.wistia.com/medias/84682rsbwu
+	
+	
+	Using OpenID Connect with Optimizely CMS
+	
+	    public class LanguageSwitcherAttribute : ActionFilterAttribute
+    {
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            if (context.HttpContext.Request.Query.TryGetValue("language", out var language))
+            {
+                ServiceLocator.Current.GetInstance<IContentLanguageAccessor>().SetPreferredCulture(language);
+            }
+            base.OnActionExecuting(context);
+        }
+    }
+	
+	
+	using EPiServer.Framework.Cache;
+using EPiServer.Logging;
+using EPiServer.ServiceLocation;
+using Foundation.Data.Models.Forms;
+using Foundation.Data.Models.Forms.Consent;
+using Foundation.Data.Models.Forms.ContactUs;
+using Foundation.Data.Models.Forms.HappinessForm;
+using Foundation.Data.Models.Forms.InvestorRelation;
+using Foundation.Data.Models.Forms.RakValue;
+using Foundation.Data.Repositories;
+using Foundation.Data.ViewModel;
+using HeadlessCms.Api.Extensions;
+using HeadlessCms.Api.Models.Calculators;
+using HeadlessCms.Api.Models.EmailSmsRequest;
+using HeadlessCms.Api.Models.Forms;
+using HeadlessCms.Api.Services.Interfaces;
+using HeadlessCms.CMS.Helper;
+using HeadlessCms.Extensions;
+using HeadlessCms.Features.Shared;
+using Microsoft.Extensions.Configuration;
+using Newtonsoft.Json;
+using RestSharp;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace HeadlessCms.Api.Services.Implements
+{
+    [ServiceConfiguration(Lifecycle = ServiceInstanceScope.Scoped, ServiceType = typeof(IFormSubmitService))]
+    public class FormSubmitService : IFormSubmitService
+    {
+        private readonly IFormSubmitRepository formSubmitRepository;
+        private readonly IEmailSmsService emailSmsService;
+        private IConfiguration Configuration;
+        private IRakServiceBase serviceBase;
+        private readonly ISynchronizedObjectInstanceCache instanceCache;
+        private readonly ILogger log = LogManager.GetLogger();
+
+        public FormSubmitService(IFormSubmitRepository formSubmitRepository, IEmailSmsService emailSmsService, IConfiguration Configuration, ISynchronizedObjectInstanceCache instanceCache, IRakServiceBase serviceBase)
+        {
+            this.formSubmitRepository = formSubmitRepository;
+            this.emailSmsService = emailSmsService;
+            this.Configuration = Configuration;
+            this.instanceCache = CacheFactoryHelper.GetCacheInstance();
+            this.serviceBase = serviceBase;
+        }
+
+        #region Public form Methods
+        FormSubmitResponse IFormSubmitService.SubmitCallMeBackForm(FormSubmitRequest formRequest)
+        {
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (formRequest == null)
+                {
+                    response.ErrorMessage = "Call Me Back request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(formRequest.GReCaptchaToken))
+                {
+                    response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA is empty");
+                }
+                if (formRequest.IsShowName && string.IsNullOrWhiteSpace(formRequest.Name))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.Name), $"{formRequest.Name} is empty");
+                    //throw new Exception($"{nameof(formRequest.FirstName)} is null");
+                }
+                if (formRequest.IsShowCompanyName && string.IsNullOrWhiteSpace(formRequest.CompanyName))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.CompanyName), $"{formRequest.CompanyName} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(formRequest.Email))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.Email), $"{formRequest.Email} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(formRequest.MobileNumber))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.MobileNumber), $"{formRequest.MobileNumber} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(formRequest.CrossSellProductCode))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.CrossSellProductCode), $"{formRequest.CrossSellProductCode} is empty");
+                }
+                if (formRequest.IsSalaryRequired && string.IsNullOrWhiteSpace(formRequest.SalaryRange))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.SalaryRange), $"{formRequest.SalaryRange} is empty");
+                }
+                if (formRequest.IsShowAnnualTurnover && string.IsNullOrWhiteSpace(formRequest.AnnualTurnOver))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.AnnualTurnOver), $"{formRequest.AnnualTurnOver} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(formRequest.GoogleRecaptchaConfigGuid))
+                {
+                    response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is empty");
+                }
+                if (!response.FieldErrors.Any())
+                {
+                    Guid guid;
+                    if (Guid.TryParse(formRequest.GoogleRecaptchaConfigGuid, out guid))
+                    {
+                        if (Helper.IsReCaptchValid(formRequest.GReCaptchaToken, 1, formRequest.Language, guid))
+                        {
+                            var body = new
+                            {
+                                customerName = formRequest.IsShowName ? formRequest.Name : formRequest.CompanyName,
+                                productName = formRequest.CrossSellProductCode,
+                                customerEmail = formRequest.Email,
+                                custMobileNumber = formRequest.MobileNumber,
+                                salaryIncome = formRequest.SalaryRange,
+                                annualTurnOver = formRequest.AnnualTurnOver,
+                                companyCode = formRequest.CompanyName
+
+                            };
+
+                            var apiPath = FormsApiPath.CallMeBack;
+                            var serialized = JsonConvert.SerializeObject(body);
+                            var apiResponse = SubmitRAKLeads(apiPath, serialized, response);
+                            if (apiResponse != null && apiResponse.Result != null)
+                            {
+                                response = apiResponse.Result;
+                            }
+                        }
+                        else
+                        {
+                            response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA validation failed.");
+                        }
+                    }
+                    else
+                    {
+                        response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is invalid");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SubmitCallMeBackForm] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SubmitCallMeBackForm] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public FormSubmitResponse SubmitRakValueNewCustomer(RakValueRequest request)
+        {
+            string outParameterValue = string.Empty;
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Rak Value request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(request.Title))
+                {
+                    response.FieldErrors.Add(nameof(request.Title), $"{nameof(request.Title)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.FullName))
+                {
+                    response.FieldErrors.Add(nameof(request.FullName), $"{nameof(request.FullName)} is empty");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.MobileNumber))
+                {
+                    response.FieldErrors.Add(nameof(request.MobileNumber), $"{nameof(request.MobileNumber)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Email))
+                {
+                    response.FieldErrors.Add(nameof(request.Email), $"{nameof(request.Email)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.ProductType))
+                {
+                    response.FieldErrors.Add(nameof(request.ProductType), $"{nameof(request.ProductType)} is empty");
+                }
+                if (!response.FieldErrors.Any())
+                {
+                    var body = new
+                    {
+                        accountNumber = request.AccountNumber,
+                        creditCardNumber = request.CreditCard,
+                        customerName = request.FullName,
+                        fullName = request.Email,
+                        mobileNumber = request.MobileNumber,
+                        rakValueFor = request.ProductType,
+                        emailId = request.Email,
+                    };
+
+                    var apiPath = FormsApiPath.RakValueNewCustomer;
+                    var serialized = JsonConvert.SerializeObject(body);
+                    var apiResponse = SubmitRAKLeads(apiPath, serialized, response);
+                    if (apiResponse != null && apiResponse.Result != null)
+                    {
+                        response = apiResponse.Result;
+                    }
+
+                    if (response.Id > 0)
+                    {
+                        EmailRequest emailRequest = new EmailRequest();
+                        emailRequest.Subject = $"Rak Value New Customer - [{response.ReferenceNumber}]";
+                        emailRequest.ToName = $"{request.FullName}";
+                        emailRequest.ToAddress = request.Email;
+                        emailRequest.IsHtmlBody = true;
+                        emailRequest.Body = "<h1>email sent</h1>";
+                        emailRequest.RequireSSL = false;
+                        var emailResponse = emailSmsService.SendEmail(emailRequest);
+                        if (!emailResponse.Result.IsSuccess)
+                        {
+                            response.ErrorMessage = emailResponse.Result.ErrorMessage;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SubmitRakValueNewCustomer] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SubmitRakValueNewCustomer] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public FormSubmitResponse SubmitContcatUsForm(ContactUsRequest request)
+        {
+            string outParameterValue = string.Empty;
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Contact Us request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(request.GReCaptchaToken))
+                {
+                    response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Salutation))
+                {
+                    response.FieldErrors.Add(nameof(request.Salutation), $"{nameof(request.Salutation)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.FirstName))
+                {
+                    response.FieldErrors.Add(nameof(request.FirstName), $"{nameof(request.FirstName)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.LastName))
+                {
+                    response.FieldErrors.Add(nameof(request.LastName), $"{nameof(request.LastName)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.MobileNumber))
+                {
+                    response.FieldErrors.Add(nameof(request.MobileNumber), $"{nameof(request.MobileNumber)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Email))
+                {
+                    response.FieldErrors.Add(nameof(request.Email), $"{nameof(request.Email)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.EnquiryType))
+                {
+                    response.FieldErrors.Add(nameof(request.EnquiryType), $"{nameof(request.EnquiryType)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.EnquiryMessage))
+                {
+                    response.FieldErrors.Add(nameof(request.EnquiryMessage), $"{nameof(request.EnquiryMessage)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.ProductCode))
+                {
+                    response.FieldErrors.Add(nameof(request.ProductCode), $"{nameof(request.ProductCode)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.GoogleRecaptchaConfigGuid))
+                {
+                    response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is empty");
+                }
+                if (!response.FieldErrors.Any())
+                {
+                    Guid guid;
+                    if (Guid.TryParse(request.GoogleRecaptchaConfigGuid, out guid))
+                    {
+                        if (Helper.IsReCaptchValid(request.GReCaptchaToken, 1, request.Language, guid))
+                        {
+                            var body = new
+                            {
+                                title = request.Salutation,
+                                firstName = request.FirstName,
+                                lastName = request.LastName,
+                                email = request.Email,
+                                mobileNumber = request.MobileNumber,
+                                feedback = request.ProductCode == "0" ? request.EnquiryType : request.ProductCode,
+                                comments = request.EnquiryMessage,
+                            };
+
+                            var apiPath = request.ContactUsType == "business" ? FormsApiPath.ContactUsBusiness : FormsApiPath.ContactUsRetail;
+                            var serialized = JsonConvert.SerializeObject(body);
+                            var apiResponse = SubmitRAKLeads(apiPath, serialized, response);
+                            if (apiResponse != null && apiResponse.Result != null)
+                            {
+                                response = apiResponse.Result;
+                            }
+                        }
+                        else
+                        {
+                            response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA validation failed.");
+                        }
+                    }
+                    else
+                    {
+                        response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is invalid");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SubmitContcatUsForm] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SubmitContcatUsForm] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        private FormSubmitResponse SaveCalMeBackForm(FormSubmitRequest formRequest)
+        {
+            var response = new FormSubmitResponse();
+            string outParameterValue = string.Empty;
+            try
+            {
+                if (formRequest.IsShowName && string.IsNullOrWhiteSpace(formRequest.Name))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.Name), $"{formRequest.Name} is empty");
+                }
+                if (formRequest.IsShowCompanyName && string.IsNullOrWhiteSpace(formRequest.CompanyName))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.CompanyName), $"{formRequest.CompanyName} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(formRequest.Email))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.Email), $"{formRequest.Email} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(formRequest.MobileNumber))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.MobileNumber), $"{formRequest.MobileNumber} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(formRequest.CrossSellProductCode))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.CrossSellProductCode), $"{formRequest.CrossSellProductCode} is empty");
+                }
+                if (formRequest.IsSalaryRequired && string.IsNullOrWhiteSpace(formRequest.SalaryRange))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.SalaryRange), $"{formRequest.SalaryRange} is empty");
+                }
+                if (formRequest.IsShowAnnualTurnover && string.IsNullOrWhiteSpace(formRequest.AnnualTurnOver))
+                {
+                    response.FieldErrors.Add(nameof(formRequest.AnnualTurnOver), $"{formRequest.AnnualTurnOver} is empty");
+                }
+                if (!response.FieldErrors.Any())
+                {
+                    var body = new
+                    {
+                        customerName = formRequest.Name,
+                        productName = formRequest.CrossSellProductCode,
+                        customerEmail = formRequest.Email,
+                        custMobileNumber = formRequest.MobileNumber,
+                        salaryIncome = formRequest.SalaryRange,
+                        annualTurnOver = formRequest.AnnualTurnOver,
+                        companyCode = formRequest.CompanyName
+                    };
+
+                    var apiPath = FormsApiPath.CallMeBack;
+                    var serialized = JsonConvert.SerializeObject(body);
+                    var apiResponse = SubmitRAKLeads(apiPath, serialized, response);
+                    if (apiResponse != null && apiResponse.Result != null)
+                    {
+                        response = apiResponse.Result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SaveCalMeBackForm] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SaveCalMeBackForm] Error raised during the operation of Form Submission";
+            }
+            return response;
+        }
+
+        public FormSubmitResponse SendSMS(EmailRequest request)
+        {
+
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Send request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(request.ToAddress))
+                {
+                    response.FieldErrors.Add(nameof(request.ToAddress), $"{nameof(request.ToAddress)} is empty");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Body))
+                {
+                    response.FieldErrors.Add(nameof(request.Body), $"{nameof(request.Body)} is empty");
+                }
+
+                if (!response.FieldErrors.Any())
+                {
+                    var body = new
+                    {
+                        toAddress = request.ToAddress,
+                        messageContent = request.Body,
+                        langPref = request.Language == "ar" ? "AR" : "E",
+                    };
+
+                    var apiPath = FormsApiPath.SMSSend;
+                    var serialized = JsonConvert.SerializeObject(body);
+                    var apiResponse = SubmitRAKLeads(apiPath, serialized, response);
+                    if (apiResponse != null && apiResponse.Result != null)
+                    {
+                        response = apiResponse.Result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SendSMS] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SendSMS] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public FormSubmitResponse SendEmail(EmailRequest request)
+        {
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Send Email request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(request.FromAddress))
+                {
+                    response.FieldErrors.Add(nameof(request.FromAddress), $"{nameof(request.FromAddress)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.ToAddress))
+                {
+                    response.FieldErrors.Add(nameof(request.ToAddress), $"{nameof(request.ToAddress)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Subject))
+                {
+                    response.FieldErrors.Add(nameof(request.Subject), $"{nameof(request.Subject)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Body))
+                {
+                    response.FieldErrors.Add(nameof(request.Body), $"{nameof(request.Body)} is empty");
+                }
+
+                if (!response.FieldErrors.Any())
+                {
+                    string[] separator = { "," };
+                    var body = new
+                    {
+                        fromAddress = request.FromAddress,
+                        toAddress = request.ToAddress.SplitBySeparators(separator),
+                        subject = request.Subject,
+                        content = request.Body,
+                    };
+
+                    var apiPath = FormsApiPath.EmailSend;
+                    var serialized = JsonConvert.SerializeObject(body);
+                    var apiResponse = SubmitRAKLeads(apiPath, serialized, response);
+                    if (apiResponse != null && apiResponse.Result != null)
+                    {
+                        response = apiResponse.Result;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SendEmail] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SendEmail] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public async Task<FormSubmitResponse> SubmitHappinessForm(HappinessRequest request)
+        {
+            string outParameterValue = string.Empty;
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Contact Us request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(request.GReCaptchaToken))
+                {
+                    response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.FullName))
+                {
+                    response.FieldErrors.Add(nameof(request.FullName), $"{nameof(request.FullName)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.MobileNumber))
+                {
+                    response.FieldErrors.Add(nameof(request.MobileNumber), $"{nameof(request.MobileNumber)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Suggestions))
+                {
+                    response.FieldErrors.Add(nameof(request.Suggestions), $"{nameof(request.Suggestions)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Rating))
+                {
+                    response.FieldErrors.Add(nameof(request.Rating), $"{nameof(request.Rating)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.GoogleRecaptchaConfigGuid))
+                {
+                    response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is empty");
+                }
+
+
+                if (!response.FieldErrors.Any())
+                {
+                    Guid guid;
+                    if (Guid.TryParse(request.GoogleRecaptchaConfigGuid, out guid))
+                    {
+                        if (Helper.IsReCaptchValid(request.GReCaptchaToken, 1, request.Language, guid))
+                        {
+                            var body = new
+                            {
+                                customerName = request.FullName,
+                                mobileNumber = request.MobileNumber,
+                                suggestions = request.Suggestions,
+                                happyMeter = request.Rating
+                            };
+
+                            var apiPath = FormsApiPath.HappinesshFeedback;
+                            var serialized = JsonConvert.SerializeObject(body);
+                            var apiResponse = SubmitRAKLeads(apiPath, serialized, response);
+                            if (apiResponse != null && apiResponse.Result != null)
+                            {
+                                response = apiResponse.Result;
+                            }
+                        }
+                        else
+                        {
+                            response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA validation failed.");
+                        }
+                    }
+                    else
+                    {
+                        response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is invalid");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SubmitHappinessForm] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SubmitHappinessForm] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public async Task<FormSubmitResponse> SubmitBranchFeedbackForm(BranchFeedbackRequest request)
+        {
+            string outParameterValue = string.Empty;
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Contact Us request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(request.BranchName))
+                {
+                    response.FieldErrors.Add(nameof(request.BranchName), $"{nameof(request.BranchName)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.GReCaptchaToken))
+                {
+                    response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.CommentsServeBetter))
+                {
+                    response.FieldErrors.Add(nameof(request.CommentsServeBetter), $"{nameof(request.CommentsServeBetter)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.CustomerName))
+                {
+                    response.FieldErrors.Add(nameof(request.CustomerName), $"{nameof(request.CustomerName)} is empty");
+                }
+                if (request.CustomerService < 1 || request.CustomerService > 10)
+                {
+                    response.FieldErrors.Add(nameof(request.CustomerService), $"{nameof(request.CustomerService)} is not valid");
+                }
+                if (string.IsNullOrWhiteSpace(request.DetailsVisit))
+                {
+                    response.FieldErrors.Add(nameof(request.DetailsVisit), $"{nameof(request.DetailsVisit)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.MobileNumber))
+                {
+                    response.FieldErrors.Add(nameof(request.MobileNumber), $"{nameof(request.MobileNumber)} is empty");
+                }
+                if (request.RecommendOthers < 1 || request.RecommendOthers > 10)
+                {
+                    response.FieldErrors.Add(nameof(request.RecommendOthers), $"{nameof(request.RecommendOthers)} is not valid");
+                }
+                if (string.IsNullOrWhiteSpace(request.SiteVisit))
+                {
+                    response.FieldErrors.Add(nameof(request.SiteVisit), $"{nameof(request.SiteVisit)} is not valid");
+                }
+                if (request.StaffKnowledge < 1 || request.StaffKnowledge > 10)
+                {
+                    response.FieldErrors.Add(nameof(request.StaffKnowledge), $"{nameof(request.StaffKnowledge)} is not valid");
+                }
+                if (request.WaitTime < 1 || request.WaitTime > 10)
+                {
+                    response.FieldErrors.Add(nameof(request.WaitTime), $"{nameof(request.WaitTime)} is not valid");
+                }
+                if (string.IsNullOrWhiteSpace(request.GoogleRecaptchaConfigGuid))
+                {
+                    response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is empty");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Appearance))
+                {
+                    response.FieldErrors.Add(nameof(request.Appearance), $"{nameof(request.Appearance)} is not valid");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.CommentsServeBetter))
+                {
+                    response.FieldErrors.Add(nameof(request.CommentsServeBetter), $"{nameof(request.CommentsServeBetter)} is empty");
+                }
+
+                if (!response.FieldErrors.Any())
+                {
+                    Guid guid;
+                    if (Guid.TryParse(request.GoogleRecaptchaConfigGuid, out guid))
+                    {
+                        if (Helper.IsReCaptchValid(request.GReCaptchaToken, 1, request.Language, guid))
+                        {
+                            var body = new
+                            {
+                                appearance = request.Appearance,
+                                staffKnowledge = request.StaffKnowledge,
+                                customerService = request.CustomerService,
+                                waitTime = request.WaitTime,
+                                commentsServeBetter = request.CommentsServeBetter,
+                                siteVisit = request.SiteVisit,
+                                detailsVisit = request.DetailsVisit,
+                                recommendOthers = request.RecommendOthers,
+                                customerName = request.CustomerName,
+                                emailId = request.EmailId,
+                                mobileNumber = request.MobileNumber,
+                                feedbackDate = request.FeedbackDate,
+                                callBack = request.CallBack,
+                                branchName = request.BranchName
+                            };
+
+                            var apiPath = FormsApiPath.BranchFeedback;
+                            var serialized = JsonConvert.SerializeObject(body);
+                            var apiResponse = SubmitRAKLeads(apiPath, serialized, response);
+                            if (apiResponse != null && apiResponse.Result != null)
+                            {
+                                response = apiResponse.Result;
+                            }
+                        }
+                        else
+                        {
+                            response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA validation failed.");
+                        }
+                    }
+                    else
+                    {
+                        response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is invalid");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SubmitBranchFeedbackForm] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SubmitBranchFeedbackForm] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public async Task<FormSubmitResponse> SubmitInvestorContactUsForm(InvestorContactUsRequest request)
+        {
+            string outParameterValue = string.Empty;
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Contact Us request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(request.GReCaptchaToken))
+                {
+                    response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Title))
+                {
+                    response.FieldErrors.Add(nameof(request.Title), $"{nameof(request.Title)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.FirstName))
+                {
+                    response.FieldErrors.Add(nameof(request.FirstName), $"{nameof(request.FirstName)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.LastName))
+                {
+                    response.FieldErrors.Add(nameof(request.LastName), $"{nameof(request.LastName)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.EmailId))
+                {
+                    response.FieldErrors.Add(nameof(request.EmailId), $"{nameof(request.EmailId)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Company))
+                {
+                    response.FieldErrors.Add(nameof(request.Company), $"{nameof(request.Company)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Address))
+                {
+                    response.FieldErrors.Add(nameof(request.Address), $"{nameof(request.Address)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Country))
+                {
+                    response.FieldErrors.Add(nameof(request.Country), $"{nameof(request.Country)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.City))
+                {
+                    response.FieldErrors.Add(nameof(request.City), $"{nameof(request.City)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.ZipCode))
+                {
+                    response.FieldErrors.Add(nameof(request.ZipCode), $"{nameof(request.ZipCode)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.Comments))
+                {
+                    response.FieldErrors.Add(nameof(request.Comments), $"{nameof(request.Comments)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.AssociationWithRakbank))
+                {
+                    response.FieldErrors.Add(nameof(request.AssociationWithRakbank), $"{nameof(request.AssociationWithRakbank)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.GoogleRecaptchaConfigGuid))
+                {
+                    response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is empty");
+                }
+                if (!response.FieldErrors.Any())
+                {
+                    Guid guid;
+                    if (Guid.TryParse(request.GoogleRecaptchaConfigGuid, out guid))
+                    {
+                        if (Helper.IsReCaptchValid(request.GReCaptchaToken, 1, request.Language, guid))
+                        {
+                            var body = new
+                            {
+                                title = request.Title,
+                                firstName = request.FirstName,
+                                lastName = request.LastName,
+                                emailId = request.EmailId,
+                                city = request.City,
+                                country = request.Country,
+                                zipCode = request.ZipCode,
+                                address = request.Address,
+                                telephone = request.Telephone,
+                                comments = request.Comments,
+                                associationWithRakbank = request.AssociationWithRakbank,
+                                company = request.Company,
+                                subscription = request.Subsciprion
+                            };
+
+                            var apiPath = FormsApiPath.InvestorContactUs;
+                            var serialized = JsonConvert.SerializeObject(body);
+                            var apiResponse = SubmitRAKLeads(apiPath, serialized, response);
+                            if (apiResponse != null && apiResponse.Result != null)
+                            {
+                                response = apiResponse.Result;
+                            }
+                        }
+                        else
+                        {
+                            response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA validation failed.");
+                        }
+                    }
+                    else
+                    {
+                        response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is invalid");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SubmitInvestorContactUsForm] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SubmitInvestorContactUsForm] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public async Task<FormSubmitResponse> SubmitConsentForm(ConsentFormRequest request)
+        {
+            string outParameterValue = string.Empty;
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Contact Us request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(request.GReCaptchaToken))
+                {
+                    response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.CustomerName))
+                {
+                    response.FieldErrors.Add(nameof(request.CustomerName), $"{nameof(request.CustomerName)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.CustomerEmailId))
+                {
+                    response.FieldErrors.Add(nameof(request.CustomerEmailId), $"{nameof(request.CustomerEmailId)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.CustomerMobileNumber))
+                {
+                    response.FieldErrors.Add(nameof(request.CustomerMobileNumber), $"{nameof(request.CustomerMobileNumber)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.EmiratesIdNumber))
+                {
+                    response.FieldErrors.Add(nameof(request.EmiratesIdNumber), $"{nameof(request.EmiratesIdNumber)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.GoogleRecaptchaConfigGuid))
+                {
+                    response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is empty");
+                }
+
+                if (!response.FieldErrors.Any())
+                {
+                    Guid guid;
+                    if (Guid.TryParse(request.GoogleRecaptchaConfigGuid, out guid))
+                    {
+                        if (Helper.IsReCaptchValid(request.GReCaptchaToken, 1, request.Language, guid))
+                        {
+                            var body = new
+                            {
+                                customerFullName = request.CustomerName,
+                                customerEmailId = request.CustomerEmailId,
+                                customerMobileNumber = request.CustomerMobileNumber,
+                                emiratesId = request.EmiratesIdNumber,
+                                optInEmail = request.OptInEmail,
+                                optInSMS = request.OptInSMS,
+                                optInTelephoneCalls = request.OptInTelephoneCalls
+                            };
+
+                            var apiPath = FormsApiPath.ConsentForm;
+                            var serialized = JsonConvert.SerializeObject(body);
+                            var apiResponse = SubmitRAKLeads(apiPath, serialized, response);
+                            if (apiResponse != null && apiResponse.Result != null)
+                            {
+                                response = apiResponse.Result;
+                            }
+                        }
+                        else
+                        {
+                            response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA validation failed.");
+                        }
+                    }
+                    else
+                    {
+                        response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is invalid");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SubmitConsentForm] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SubmitConsentForm] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public async Task<FormSubmitResponse> VerifyConsentOtp(ConsentFormOtpRequest request)
+        {
+            string outParameterValue = string.Empty;
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Contact Us request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(request.GReCaptchaToken))
+                {
+                    response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA is empty");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.OTPCode))
+                {
+                    response.FieldErrors.Add(nameof(request.OTPCode), $"{nameof(request.OTPCode)} is empty");
+                }
+
+                if (request.ConsentId <= 0)
+                {
+                    response.FieldErrors.Add(nameof(request.ConsentId), $"{nameof(request.ConsentId)} is empty");
+                }
+
+                if (!response.FieldErrors.Any())
+                {
+                    Guid guid;
+                    if (Guid.TryParse(request.GoogleRecaptchaConfigGuid, out guid))
+                    {
+                        if (Helper.IsReCaptchValid(request.GReCaptchaToken, 1, request.Language, guid))
+                        {
+                            var body = new
+                            {
+                                otpCode = request.OTPCode,
+                            };
+
+                            var apiPath = FormsApiPath.ConsentFormOtp.Replace("{id}", request.ConsentId.ToString());
+                            var serialized = JsonConvert.SerializeObject(body);
+                            var apiResponse = SubmitRAKLeads(apiPath, serialized, response, Method.Patch);
+                            if (apiResponse != null && apiResponse.Result != null)
+                            {
+                                response = apiResponse.Result;
+                            }
+                        }
+                        else
+                        {
+                            response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA validation failed.");
+                        }
+                    }
+                    else
+                    {
+                        response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is invalid");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.VerifyConsentOtp] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.VerifyConsentOtp] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public FormSubmitResponse SendNotification(FormNotificationRequest request)
+        {
+            FormSubmitResponse response = new FormSubmitResponse();
+            EmailRequest emailRequest = null;
+            FormSubmitResponse emailResponse = null;
+            var AdminFieldErrors = new Dictionary<string, string>();
+            var CustomerFieldErrors = new Dictionary<string, string>();
+            var SmsFieldErrors = new Dictionary<string, string>();
+
+            Dictionary<string, string> tokens = new Dictionary<string, string>() ;
+            tokens.Add("%%customer name%%", request.CustomerName);
+            tokens.Add("%%enquiries / feedback related to%%", request.Feedback);
+            tokens.Add("%%product name%%", request.ProductName);
+
+            tokens.Add("%%title%%", request.Title);
+            tokens.Add("%%email id%%", request.Email);
+            tokens.Add("%%mobile number%%", request.MobileNumber);
+            tokens.Add("%%customer comments%%", request.Message);
+
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Form Notification request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (request.Id.HasValue && request.Id <= 0)
+                {
+                    response.FieldErrors.Add(nameof(request.Id), $"{nameof(request.Id)} is empty");
+                }
+
+                if (request.AdminEmailTemplate != null && !string.IsNullOrWhiteSpace(request.AdminEmailTemplate.TemplateId))
+                {
+                    
+                        Guid adminTemplateId;
+                        Guid.TryParse(request.AdminEmailTemplate.TemplateId, out adminTemplateId);
+                        AdminEmailTemplate data = Helper.GetBlockContentData<AdminEmailTemplate>(request.Language, adminTemplateId);
+                        if (data != null)
+                        {
+
+                            if (string.IsNullOrWhiteSpace(data.From))
+                            {
+                                AdminFieldErrors.Add($"{nameof(data.From)}", $"{nameof(data.From)} is empty");
+                            }
+                            if (string.IsNullOrWhiteSpace(data.To))
+                            {
+                                AdminFieldErrors.Add($"{nameof(data.To)}", $"{nameof(data.To)} is empty");
+                            }
+                            if (string.IsNullOrWhiteSpace(data.Body))
+                            {
+                                AdminFieldErrors.Add($"{nameof(data.Body)}", $"{nameof(data.Body)} is empty");
+                            }
+                            if (string.IsNullOrWhiteSpace(data.Subject))
+                            {
+                                AdminFieldErrors.Add($"{nameof(data.Subject)}", $"{nameof(data.Subject)} is empty");
+                            }
+
+                            if (!AdminFieldErrors.Any())
+                            {
+                                emailRequest = new EmailRequest();
+                                emailRequest.Subject = Helper.ReplaceContentToken(data.Subject, tokens); ;
+                                emailRequest.ToAddress = data.To;
+                                emailRequest.FromAddress = data.From;
+                                emailRequest.Body = Helper.ReplaceContentToken(data.Body, tokens);
+                                emailResponse = SendEmail(emailRequest);
+                                if (!emailResponse.IsSuccess)
+                                {
+                                    response.ErrorMessage += $"{Environment.NewLine}  {(request.Id.HasValue ? "Id:" + request.Id : "")} {Environment.NewLine}  Admin Email Functionality  {Environment.NewLine} +{emailResponse.ErrorMessage}";
+                                }
+                            }
+
+                        }
+                    
+
+                }
+
+                if (request.CustomerEmailTemplate != null && !string.IsNullOrWhiteSpace(request.CustomerEmailTemplate.TemplateId) )
+                {
+                    Guid customerTemplateId;
+                    Guid.TryParse(request.CustomerEmailTemplate.TemplateId, out customerTemplateId);
+                    EmailTemplate data = Helper.GetBlockContentData<EmailTemplate>(request.Language, customerTemplateId);
+
+                    if (data != null)
+                    {
+                        if (string.IsNullOrWhiteSpace(data.From))
+                        {
+                            CustomerFieldErrors.Add($"{nameof(data.From)}", $"{nameof(data.From)} is empty");
+                        }                       
+                        if (string.IsNullOrWhiteSpace(data.Body))
+                        {
+                            CustomerFieldErrors.Add($"{nameof(data.Body)}", $"{nameof(data.Body)} is empty");
+                        }
+                        if (string.IsNullOrWhiteSpace(data.Subject))
+                        {
+                            CustomerFieldErrors.Add($"{nameof(data.Subject)}", $"{nameof(data.Subject)} is empty");
+                        }
+
+                        if (!CustomerFieldErrors.Any())
+                        {
+                            emailRequest = new EmailRequest();
+                            emailRequest.Subject = Helper.ReplaceContentToken(data.Subject, tokens); 
+                            emailRequest.ToAddress = request.Email;
+                            emailRequest.FromAddress = data.From;
+                            emailRequest.Body = Helper.ReplaceContentToken(data.Body, tokens);
+                            emailResponse = SendEmail(emailRequest);
+                            if (!emailResponse.IsSuccess)
+                            {
+                                response.ErrorMessage += $"{Environment.NewLine} {(request.Id.HasValue ? "Id:" + request.Id : "")} {Environment.NewLine}  Customer Email Functionality  {Environment.NewLine} {emailResponse.ErrorMessage}";
+                            }
+                        } 
+                    }
+                }
+
+                if (request.SmsTemplate != null && !string.IsNullOrWhiteSpace(request.SmsTemplate.TemplateId))
+                {
+                    Guid smsTemplateId;
+                    Guid.TryParse(request.SmsTemplate.TemplateId, out smsTemplateId);
+                    SmsTemplate data = Helper.GetBlockContentData<SmsTemplate>(request.Language, smsTemplateId);
+
+                   
+                    if (string.IsNullOrWhiteSpace(data.MessageContent))
+                    {
+                        SmsFieldErrors.Add($"{nameof(data.MessageContent)}", $"{nameof(data.MessageContent)} is empty");
+                    }
+
+                    if (!SmsFieldErrors.Any())
+                    {
+                        emailRequest = new EmailRequest();
+                        emailRequest.ToAddress = request.MobileNumber;
+                        emailRequest.Body = Helper.ReplaceContentToken(data.MessageContent, tokens);
+                        emailRequest.Language = request.Language;
+                        emailResponse = SendSMS(emailRequest);
+                        if (!emailResponse.IsSuccess)
+                        {
+                            response.ErrorMessage += $"{Environment.NewLine} {(request.Id.HasValue ? "Id:" + request.Id : "")} {Environment.NewLine}  Customer SMS Functionality  {Environment.NewLine} {emailResponse.ErrorMessage}";
+                        }
+                    }
+                }
+
+                AdminFieldErrors.ToList().ForEach(x => response.FieldErrors.Add(x.Key, x.Value));
+                CustomerFieldErrors.ToList().ForEach(x => response.FieldErrors.Add(x.Key, x.Value));
+                SmsFieldErrors.ToList().ForEach(x => response.FieldErrors.Add(x.Key, x.Value));
+
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SendNotification] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SendNotification] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public async Task<FormSubmitResponse> SubmitWebsiteHappinessForm(WebsiteFeedbackRequest request)
+        {
+            string outParameterValue = string.Empty;
+            FormSubmitResponse response = new FormSubmitResponse();
+            var startTime = Stopwatch.StartNew();
+            try
+            {
+                if (request == null)
+                {
+                    response.ErrorMessage = "Website feedback request data is null";
+                    startTime.Stop();
+                    response.ProcessTime = startTime.ElapsedMilliseconds;
+                    return response;
+                }
+                if (string.IsNullOrWhiteSpace(request.GReCaptchaToken))
+                {
+                    response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA is empty");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.HappyMeter))
+                {
+                    response.FieldErrors.Add(nameof(request.HappyMeter), $"{nameof(request.HappyMeter)} is empty");
+                }
+                if (string.IsNullOrWhiteSpace(request.GoogleRecaptchaConfigGuid))
+                {
+                    response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is empty");
+                }
+
+
+                if (!response.FieldErrors.Any())
+                {
+                    Guid guid;
+                    if (Guid.TryParse(request.GoogleRecaptchaConfigGuid, out guid))
+                    {
+                        if (Helper.IsReCaptchValid(request.GReCaptchaToken, 1, request.Language, guid))
+                        {
+                            Int64 result = formSubmitRepository.InsertWebsiteHappinessForm(request);
+                            response.Id = result;
+                            response.ErrorMessage = result > 0 ? "" : "Website Feedback request submission is not succesful due to some error.";
+
+                        }
+                        else
+                        {
+                            response.FieldErrors.Add("reCaptcha", "Google ReCAPTCHA validation failed.");
+                        }
+                    }
+                    else
+                    {
+                        response.FieldErrors.Add("googleRecaptchaConfigGuid", "Google Recaptcha Config Guid is invalid");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                log.Error($"[FormSubmitService.SubmitWebsiteHappinessForm] Error raised during the operation of Form Submission ==> {ex.Message}", exception: ex);
+                response.ErrorMessage = "[FormSubmitService.SubmitWebsiteHappinessForm] Error raised during the operation of Form Submission";
+            }
+            finally
+            {
+                startTime.Stop();
+                response.ProcessTime = startTime.ElapsedMilliseconds;
+            }
+            return response;
+        }
+
+        public CallMebackViewModel GetAllCallMebackResponse(CallMeBackSearchModel formRequest)
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Lead Submission
+
+        private async Task<FormSubmitResponse> SubmitRAKLeads(string apiPath, string body, FormSubmitResponse response, Method method = Method.Post)
+        {
+            this.instanceCache.TryGet(this.serviceBase.AutheCacheKey, ReadStrategy.Immediate, out string apiToken);
+            if (string.IsNullOrWhiteSpace(apiToken))
+            {
+                RestResponse<AuthenticationToken> authResponse = await this.serviceBase.GetRakbankApiToken();
+                if (authResponse != null && authResponse.Data != null)
+                {
+                    apiToken = authResponse.Data.access_token;
+                    this.instanceCache.Insert(this.serviceBase.AutheCacheKey, authResponse.Data.access_token, CacheHelper.GetCommonCachePolicy(TimeSpan.FromSeconds(authResponse.Data.expires_in - 120)));
+                }
+            }
+            var apiHost = this.Configuration["RakLeads:ApiHost"];
+            var url = $"{apiHost}{apiPath}";
+            var client = new RestClient(url);
+            var request = new RestRequest(url, method);
+            request.AddHeader("Content-Type", "application/json");
+            request.AddHeader("Authorization", $"Bearer {apiToken}");
+            request.AddBody(body, "application/json");
+            RestResponse restResponse = await client.ExecuteAsync(request);
+            response.HttpStatusCode = (int)restResponse?.StatusCode;
+            response.ResponseContent = restResponse?.Content;
+            if (response.HttpStatusCode != 200 && response.HttpStatusCode != 201)
+            {
+                var responseContent = "";
+
+                if (response.HttpStatusCode >= 400 && response.HttpStatusCode < 500)
+                {
+                    responseContent = "Invalid Information";
+                }
+                else if (response.HttpStatusCode >= 500 && response.HttpStatusCode < 600)
+                {
+                    responseContent = "Internal Server Error";
+                }
+                log.Error($"[FormSubmitService.SubmitRAKLeads] Error raised during the operation, API Path: {apiPath} {Environment.NewLine} API Request: {body}{Environment.NewLine} API Response: {response.ResponseContent}");
+                var serialized = JsonConvert.SerializeObject(responseContent);
+
+                response.ResponseContent = serialized;
+            }
+            return response;
+
+        }
+
+        public IEnumerable<WebsiteFeedbackRequest> GetAllWebsiteFeedbackResponse()
+        {
+            log.Error($"[RakImport.FeedbackExport] Step-2");
+            return formSubmitRepository.GetAllWebsiteFeedbackResponse();
+        }
+        #endregion
+    }
+}
+
+
+    import MuiCheckBox from '@customComponents/common-components/MuiCheckBox/MuiCheckBox'
+import MuiInput from '@customComponents/common-components/MuiInput/MuiInput'
+import { GlobalConstants } from '@customComponents/utils/global-constants'
+import { useContentAreaGroup } from '@optimizely/cms/hooks/use-content-area'
+import { IContentComponent } from '@optimizely/cms/index'
+import { readValue } from '@optimizely/cms/util/property-helper'
+import React, { useState, useEffect } from 'react'
+import Button from '../Button/Button'
+import Heading from '../Heading/Heading'
+import Script from "next/script";
+import CountdownTimer from './CountdownTimer'
+import { encode } from 'html-entities';
+
+export const ConsentFormComponent: IContentComponent<any> = (props: any) => {
+    // console.log("zaid ~ props:", props)
+
+    const { locale, inEditMode } = props;
+    //Regix
+    const nameRegex: any = /^[\u0621-\u064Aa-zA-Z ]{1,255}$/;
+    const mobileNumberRegex = /^(05)\d{8}$/;
+    const emailAddressRegex: any = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+    const emiratesIdRegex: any = /^\d{3}-\d{4}-\d{7}-\d{1}$/;
+    // const emiratesIdRegex: any = /^\d{0,15}$/
+    const otpRegex: any = /^\d{6}$/;
+
+    //Content
+    const { data: googleRecaptchaConfig } = useContentAreaGroup<any>(
+        props.content,
+        "googleRecaptchaConfig",
+        locale,
+        inEditMode
+    );
+    const emailInvalidMsg = readValue(props.content, "emailInvalidMsg") ?? "";
+    const emailPlaceholder = readValue(props.content, "emailPlaceholder") ?? "";
+    const emailRadioPlaceholder = readValue(props.content, "emailRadioPlaceholder") ?? "";
+    const emiratesIdInvalidMsg = readValue(props.content, "emiratesIdInvalidMsg") ?? "";
+    const emiratesIdNote = readValue(props.content, "emiratesIdNote") ?? "";
+    const emiratesIdPlaceholder = readValue(props.content, "emiratesIdPlaceholder") ?? "";
+    const mobilePlaceholder = readValue(props.content, "mobilePlaceholder") ?? "";
+    const nameInvalidMsg = readValue(props.content, "nameInvalidMsg") ?? "";
+    const otpInvalidMsg = readValue(props.content, "otpInvalidMsg") ?? "";
+    const mobileInvalidMsg = readValue(props.content, "mobileInvalidMsg") ?? "";
+    const namePlaceholder = readValue(props.content, "namePlaceholder") ?? "";
+    const note = readValue(props.content, "note") ?? "";
+    const radioPlaceholder = readValue(props.content, "radioPlaceholder") ?? "";
+    const registeredEmailPlaceholder = readValue(props.content, "registeredEmailPlaceholder") ?? "";
+    const registeredMobilePlaceholder = readValue(props.content, "registeredMobilePlaceholder") ?? "";
+    const requiredMsg = readValue(props.content, "requiredMsg") ?? "";
+    const smsRadioPlaceholder = readValue(props.content, "smsRadioPlaceholder") ?? "";
+    const submitCtaText = readValue(props.content, "submitCtaText") ?? "";
+    const subtitle = readValue(props.content, "subtitle") ?? "";
+    const telephoneCallPlaceholder = readValue(props.content, "telephoneCallPlaceholder") ?? "";
+    const title = readValue(props.content, "title") ?? "";
+    const otpTitle = readValue(props.content, "otpTitle") ?? "";
+    const otpDescription = readValue(props.content, "otpDescription") ?? "";
+    const otpCtaText = readValue(props.content, "otpCtaText") ?? "";
+    const otpResendCTAText = readValue(props.content, "otpResendCTAText") ?? "";
+    const noOfAttempts = readValue(props.content, "noOfAttempts") ?? "";
+    const otpCountdownDescription = readValue(props.content, "otpCountdownDescription") ?? "";
+    const otpCountdownExpiredDescription = readValue(props.content, "otpCountdownExpiredDescription") ?? "";
+    const otpCountdown = readValue(props.content, "otpCountdown") ?? "";
+    const otpPlaceholderText = readValue(props.content, "otpPlaceholderText") ?? "";
+    const minutesUnit = readValue(props.content, "minutesUnit") ?? "";
+    const secondsUnit = readValue(props.content, "secondsUnit") ?? "";
+    const thankYouTitle = readValue(props.content, "thankYouTitle") ?? "";
+    const thankYouDescriptionOptIn = readValue(props.content, "thankYouDescriptionOptIn") ?? "";
+    const thankYouDescriptionOptOut = readValue(props.content, "thankYouDescriptionOptOut") ?? "";
+    const thankYouCtaText = readValue(props.content, "thankYouCtaText") ?? "";
+    const reCaptchaErrorMsg = readValue(props.content, "reCaptchaErrorMsg") ?? "";
+    const generalErrorMsg = readValue(props.content, "generalErrorMsg") ?? "";
+    const general400ErrorMsg = readValue(props.content, "general400ErrorMsg") ?? "";
+    const general500ErrorMsg = readValue(props.content, "general500ErrorMsg") ?? "";
+    //EmailTemplate
+    const adminEmailTemplateGuid = readValue(props.content, "adminEmailTemplate")?.at(0)?.contentLink?.guidValue ?? "";
+    const customerOptInEmailTemplateGuid = readValue(props.content, "customerOptInEmailTemplate")?.at(0)?.contentLink?.guidValue ?? "";
+    const customerOptOutEmailTemplateGuid = readValue(props.content, "customerOptOutEmailTemplate")?.at(0)?.contentLink?.guidValue ?? "";
+    const smsTemplateOptInGuid = readValue(props.content, "smsTemplateOptIn")?.at(0)?.contentLink?.guidValue ?? "";
+    const smsTemplateOptOutGuid = readValue(props.content, "smsTemplateOptOut")?.at(0)?.contentLink?.guidValue ?? "";
+
+    //States
+    const [isLoading, setIsLoading] = useState<Boolean>(false);
+    const [showThanksMsg, setShowThanksMsg] = useState<Boolean>(false);
+    const [showOTPScreen, setShowOTPScreen] = useState<Boolean>(false);
+    const [showForm, setShowForm] = useState<Boolean>(true);
+    const [consentId, setConsentId] = useState<number>(0);
+    const [formValidity, setFormValidity] = useState<Boolean>(false);
+    const [resendDisable, setResendDisable] = useState<Boolean>(true);
+    const [formData, setFormData] = useState<any>({
+        customerName: "",
+        customerEmailId: "",
+        customerMobileNumber: "",
+        emiratesIdNumber: "",
+        Language: locale,
+        optInEmail: false,
+        optInSMS: false,
+        optInTelephoneCalls: false,
+        GoogleRecaptchaConfigGuid: "",
+        GReCaptchaToken: "",
+    });
+    const [otpData, setOtpData] = useState({
+        otpCode: "",
+        consentId: 0,
+        Language: locale,
+        GoogleRecaptchaConfigGuid: "",
+    });
+    const [templatesData, setTemplatesData] = useState({
+        CustomerName: "",
+        MobileNumber: "",
+        Email: "",
+        ProductName: "",
+        Feedback: "",
+        Language: "",
+        FormType: "",
+        AdminEmailTemplate: {
+            TemplateId: "",
+        },
+        CustomerEmailTemplate: {
+            TemplateId: "",
+        },
+        SmsTemplate: {
+            TemplateId: "",
+        }
+    });
+    const [nameErrorMsg, setNameErrorMsg] = useState<string>("");
+    const [mobileNoErrorMsg, setMobileNoErrorMsg] = useState<string>("");
+    const [emailErrorMsg, setEmailErrorMsg] = useState<string>("");
+    const [emiratesIdErrorMsg, setEmiratesIdErrorMsg] = useState<string>("");
+    const [otpErrorMsg, setOtpErrorMsg] = useState<string>("");
+    const [generalValidationMsg, setGeneralValidationMsg] = useState<string>("");
+    const [otpCountdownDesc, setOtpCountdownDesc] = useState<string>(otpCountdownDescription);
+    const [countDown, setCountDown] = useState<number>(otpCountdown);
+    const [otpRetries, setOtpRetries] = useState<number>(noOfAttempts);
+
+
+    //Change Handlers
+    const nameChangeHandler = (e: any) => {
+        const name = e.target.name;
+        const value = e.target.value.trim();
+        if (value === "") {
+            setNameErrorMsg(requiredMsg);
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: "" }));
+        } else if (!nameRegex.test(value)) {
+            setNameErrorMsg(nameInvalidMsg)
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: "" }));
+        } else {
+            setNameErrorMsg("")
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
+        }
+    }
+    const mobileNumberChangeHandler = (e: any) => {
+        const name = e.target.name;
+        const value = e.target.value.trim();
+        if (value === "") {
+            setMobileNoErrorMsg("");
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: "" }));
+        } else if (!mobileNumberRegex.test(value)) {
+            setMobileNoErrorMsg(mobileInvalidMsg);
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: "" }));
+        } else {
+            setMobileNoErrorMsg("");
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
+        }
+    }
+    const emailChangeHandler = (e: any) => {
+        const name = e.target.name;
+        const value = e.target.value.trim();
+        if (value === "") {
+            setEmailErrorMsg("");
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: "" }));
+        } else if (!emailAddressRegex.test(value)) {
+            setEmailErrorMsg(emailInvalidMsg);
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: "" }));
+        } else {
+            setEmailErrorMsg("");
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
+        }
+    }
+    const emiratesIdChangeHandler = (e: any) => {
+        const name = e.target.name;
+        const value = e.target.value.trim();
+        if (value === "") {
+            setEmiratesIdErrorMsg("");
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: "" }));
+        } else if (!emiratesIdRegex.test(value)) {
+            setEmiratesIdErrorMsg(emiratesIdInvalidMsg);
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: "" }));
+        }
+        else {
+            setEmiratesIdErrorMsg("");
+            setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value.replaceAll("-", "") }));
+        }
+    }
+    const emailRadioChangeHandler = (e: any) => {
+        const name = e.target.name;
+        const value = e.target.checked;
+        setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
+    }
+    const smsRadioChangeHandler = (e: any) => {
+        const name = e.target.name;
+        const value = e.target.checked;
+        setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
+    }
+    const telephoneCallChangeHandler = (e: any) => {
+        const name = e.target.name;
+        const value = e.target.checked;
+        setFormData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
+    }
+
+    useEffect(() => {
+        if (showOTPScreen) {
+            setFormValidity(false);
+            const timer = setInterval(() => {
+                setCountDown((previousCount: number) => {
+                    if (previousCount === 0) {
+                        if (otpRetries === 0) {
+                            setResendDisable(true);
+                        } else {
+                            setResendDisable(false);
+                        }
+                        clearInterval(timer);
+                        return previousCount;
+                    } else {
+                        return previousCount - 1;
+                    }
+                });
+            }, 1000);
+            return () => clearInterval(timer);
+        }
+    }, [otpRetries, showOTPScreen]);
+
+    const otpCodeChangeHandler = (e: any) => {
+        const name = e.target.name;
+        const value = e.target.value.trim();
+        setGeneralValidationMsg("");
+        if (value === "") {
+            setOtpErrorMsg(requiredMsg);
+            setOtpData((prevFormData: any) => ({ ...prevFormData, [name]: "" }));
+        } else if (!otpRegex.test(value)) {
+            setOtpErrorMsg(otpInvalidMsg)
+            setOtpData((prevFormData: any) => ({ ...prevFormData, [name]: "" }));
+        } else {
+            setOtpErrorMsg("")
+            setOtpData((prevFormData: any) => ({ ...prevFormData, [name]: value }));
+        }
+    }
+
+    useEffect(() => {
+        // console.log('formData', formData)
+        if (formData.customerName === "" || formData.customerEmailId === "" || formData.customerMobileNumber === "" || formData.emiratesIdNumber === "") {
+            setFormValidity(false);
+        } else {
+            setFormValidity(true);
+        }
+
+        setTemplatesData((prevFormData: any) => ({
+            ...prevFormData,
+            CustomerName: formData?.customerName,
+            MobileNumber: formData?.customerMobileNumber,
+            Email: formData?.customerEmailId,
+            Language: locale,
+            FormType: "ConsentForm",
+            AdminEmailTemplate: {
+                "TemplateId": adminEmailTemplateGuid
+            },
+            CustomerEmailTemplate: {
+                "TemplateId": formData?.optInEmail || formData?.optInTelephoneCalls || formData?.optInSMS ? customerOptInEmailTemplateGuid : customerOptOutEmailTemplateGuid
+            },
+            SmsTemplate: {
+                "TemplateId": formData?.optInEmail || formData?.optInTelephoneCalls || formData?.optInSMS ? smsTemplateOptInGuid : smsTemplateOptOutGuid
+            }
+        }));
+    }, [formData, customerOptInEmailTemplateGuid, customerOptOutEmailTemplateGuid, adminEmailTemplateGuid, smsTemplateOptInGuid, smsTemplateOptOutGuid, locale])
+
+    useEffect(() => {
+        setFormData((prevFormData: any) => ({ ...prevFormData, "GoogleRecaptchaConfigGuid": googleRecaptchaConfig != null ? googleRecaptchaConfig[0]?.contentLink?.guidValue : "" }));
+        setOtpData((prevFormData: any) => ({ ...prevFormData, "GoogleRecaptchaConfigGuid": googleRecaptchaConfig != null ? googleRecaptchaConfig[0]?.contentLink?.guidValue : "" }));
+    }, [googleRecaptchaConfig])
+
+    useEffect(() => {
+        if (otpData.otpCode === "" && countDown === 0) {
+            setFormValidity(false);
+            setGeneralValidationMsg("");
+        } else {
+            if (otpData.otpCode !== "" && countDown > 0) {
+                setFormValidity(true);
+            } else {
+                setFormValidity(false);
+                setGeneralValidationMsg("");
+            }
+        }
+    }, [otpData, countDown])
+
+    const submitCtaModel: any = {
+        iconRight: "arrow_forward_ios",
+        tag: "button",
+        buttonText: submitCtaText
+    }
+
+    const otpCtaModel: any = {
+        iconRight: "arrow_forward_ios",
+        tag: "button",
+        buttonText: otpCtaText
+    }
+
+    const otpResendCtaModel: any = {
+        iconRight: "arrow_forward_ios",
+        tag: "button",
+        buttonText: otpResendCTAText
+    }
+
+    const thankYouCtaModel: any = {
+        iconRight: "arrow_forward_ios",
+        tag: "button",
+        buttonText: thankYouCtaText
+    }
+
+    const otpVerification = () => {
+        return new Promise((resolve, reject) => {
+            const isReCaptchaAvailable = googleRecaptchaConfig && googleRecaptchaConfig[0].reCaptchaSiteKey && googleRecaptchaConfig[0].reCaptchaSecretKey;
+            if (isReCaptchaAvailable) {
+                window?.grecaptcha?.ready(() => {
+                    window?.grecaptcha
+                        .execute(googleRecaptchaConfig[0].reCaptchaSiteKey, { action: "submit" })
+                        .then((token: string) => {
+                            fetch(`${GlobalConstants.getHost()}/api/consent/otp-verification`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    ...otpData,
+                                    consentId,
+                                    GReCaptchaToken: token
+                                }),
+                            })
+                                .then((response) => {
+                                    // console.log("otpVerification - response", response)
+                                    return response.json();
+                                })
+                                .then((data) => {
+                                    // console.log("otpVerification - data", data)
+                                    resolve(data);
+                                })
+                                .catch((errors) => {
+                                    reject(errors);
+                                });
+                        })
+                })
+            }
+        });
+    };
+
+    const templatesInitialization = () => {
+        fetch(`${GlobalConstants.getHost()}/api/consent/send-notification`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(templatesData),
+        })
+            .then((response: any) => {
+                // console.log("templatesInitialization - response", response)
+                return response.json();
+            })
+            // .then((data: any) => console.log('templatesInitialization - data', data))
+            .catch((errors: any) => console.log('errors', errors))
+    }
+
+    const otpInitialization = () => {
+        setIsLoading(true);
+        //opt
+        otpVerification()
+            .then((data: any) => {
+                if (data?.httpStatusCode === 200) {
+                    setShowThanksMsg(true);
+                    setShowOTPScreen(false);
+                } else if (data?.httpStatusCode === 400) {
+                    setGeneralValidationMsg(otpInvalidMsg);
+                    // const responseContent = JSON.parse(data.responseContent);
+                    // responseContent?.errors?.map((item: any) => {
+                    //     if (item?.errorCode === "0020") {
+                    //         setGeneralValidationMsg(otpInvalidMsg);
+                    //     }
+                    // })
+                } else if (data?.httpStatusCode === 500) {
+                    setGeneralValidationMsg(general500ErrorMsg);
+                } else {
+                    setGeneralValidationMsg(generalErrorMsg);
+                }
+
+                // setShowThanksMsg(true);
+                // setShowOTPScreen(false);
+                templatesInitialization();
+            })
+            .catch((error) => {
+                //otp verification failed
+                console.error(error);
+            })
+            .finally(() => setIsLoading(false));
+    }
+
+    const handleSubmit = async (e: any) => {
+        if (formData.customerName === "" || formData.customerEmailId === "" || formData.customerMobileNumber === "" || formData.emiratesIdNumber === "") {
+            //general error
+            setGeneralValidationMsg(generalErrorMsg);
+        } else {
+            if (formValidity) {
+                setGeneralValidationMsg("");
+                setIsLoading(true);
+                const isReCaptchaAvailable = googleRecaptchaConfig && googleRecaptchaConfig[0].reCaptchaSiteKey && googleRecaptchaConfig[0].reCaptchaSecretKey;
+                if (isReCaptchaAvailable) {
+                    window?.grecaptcha?.ready(() => {
+                        window?.grecaptcha
+                            .execute(googleRecaptchaConfig[0].reCaptchaSiteKey, { action: "submit" })
+                            .then((token: string) => {
+                                fetch(`${GlobalConstants.getHost()}/api/create/consent`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                    },
+                                    body: JSON.stringify({
+                                        ...formData,
+                                        GReCaptchaToken: token,
+                                    }),
+                                })
+                                    .then((response) => {
+                                        return response.json()
+                                    })
+                                    .then((data) => {
+                                        setIsLoading(false);
+                                        if (data.isSuccess) {
+                                            if (data.httpStatusCode === 200 || data.httpStatusCode === 201) {
+                                                setShowForm(false);
+                                                setShowOTPScreen(true);
+                                                setConsentId(JSON.parse(data.responseContent)?.consentId);
+                                            } else if (data.httpStatusCode >= 400 && data.httpStatusCode <= 499) {
+                                                if (data.httpStatusCode === 400) {
+                                                    if (Object.keys(data.fieldErrors).length === 0) {
+                                                        const responseContent = JSON.parse(data.responseContent);
+                                                        const errorMessages = responseContent.errorMessages;
+                                                        errorMessages &&
+                                                            errorMessages.length > 0 &&
+                                                            errorMessages.map((item: any) => {
+                                                                // if (item.field === "customerName") {
+                                                                //     setNameErrorMsg(fullnameErrorMsg);
+                                                                // }
+                                                            });
+                                                    }
+                                                } else {
+                                                    //general 400 error
+                                                    setGeneralValidationMsg(general400ErrorMsg);
+                                                }
+                                            } else if (data.httpStatusCode >= 500 && data.httpStatusCode <= 599) {
+                                                //general 500 error
+                                                setGeneralValidationMsg(general500ErrorMsg);
+                                            } else {
+                                                //general error
+                                                setGeneralValidationMsg(generalErrorMsg);
+                                            }
+                                        } else {
+                                            //if submission is unsuccessful due to recaptcha failed on the server else general error
+                                            if (data.fieldErrors.reCaptcha) {
+                                                setGeneralValidationMsg(reCaptchaErrorMsg);
+                                            } else {
+                                                setGeneralValidationMsg(generalErrorMsg);
+                                            }
+                                        }
+                                    })
+                                    .catch((error) => {
+                                        console.error(error);
+                                        setIsLoading(false);
+                                    });
+                            })
+                    })
+                } else {
+                    //recaptcha missing or failed error
+                    setGeneralValidationMsg(reCaptchaErrorMsg);
+                    setIsLoading(false);
+                    return;
+                }
+            }
+        }
+    }
+
+    useEffect(() => {
+        if (isLoading) {
+            document.body.classList.add(`no-scroll`);
+            document.body.classList.add(`show-loader`);
+        } else {
+            document.body.classList.remove(`no-scroll`);
+            document.body.classList.remove(`show-loader`);
+        }
+    }, [isLoading])
+
+    return <>
+        {googleRecaptchaConfig && googleRecaptchaConfig[0]?.reCaptchaSiteKey && <Script
+            src={`https://www.google.com/recaptcha/api.js?render=${googleRecaptchaConfig[0]?.reCaptchaSiteKey}`}
+        />}
+        {showForm && <section className="pt-xl-55 pt-24 pb-xl-55 pb-24 global-form">
+            <div className="container-small">
+                <Heading tag={"h3"} tagClass="h3" classes="gradient-title mb-24">
+                    {title}
+                </Heading>
+                <div className="global-form__wrapper">
+                    <Heading tag={"h5"}>{subtitle}</Heading>
+                    <div className="global-form__field-set">
+                        <div className="mb-24 mb-lg-48">
+                            <MuiInput
+                                label={""}
+                                placeholderText={namePlaceholder}
+                                name="customerName"
+                                handleChange={nameChangeHandler}
+                                required={true}
+                                error={nameErrorMsg && nameErrorMsg.length > 0 ? true : false}
+                                helpText={nameErrorMsg}
+                                max={256}
+                            />
+                        </div>
+                        <div className="mb-24 mb-lg-48">
+                            <MuiInput
+                                label={""}
+                                placeholderText={mobilePlaceholder}
+                                name="customerMobileNumber"
+                                handleChange={mobileNumberChangeHandler}
+                                required={true}
+                                error={mobileNoErrorMsg && mobileNoErrorMsg.length > 0 ? true : false}
+                                helpText={mobileNoErrorMsg && mobileNoErrorMsg.length > 0 ? mobileNoErrorMsg : registeredMobilePlaceholder}
+                                max={10}
+                                type="mobilenumber"
+                            />
+                        </div>
+                        <div className="mb-24 mb-lg-48">
+                            <MuiInput
+                                label={""}
+                                placeholderText={emailPlaceholder}
+                                name="customerEmailId"
+                                handleChange={emailChangeHandler}
+                                required={true}
+                                error={emailErrorMsg && emailErrorMsg.length > 0 ? true : false}
+                                helpText={emailErrorMsg && emailErrorMsg.length > 0 ? emailErrorMsg : registeredEmailPlaceholder}
+                                max={256}
+                            />
+                        </div>
+                        <div className="mb-24 mb-lg-48">
+                            <MuiInput
+                                label={""}
+                                placeholderText={emiratesIdPlaceholder}
+                                name="emiratesIdNumber"
+                                handleChange={emiratesIdChangeHandler}
+                                required={true}
+                                error={emiratesIdErrorMsg && emiratesIdErrorMsg.length > 0 ? true : false}
+                                helpText={emiratesIdErrorMsg && emiratesIdErrorMsg.length > 0 ? emiratesIdErrorMsg : emiratesIdNote}
+                                max={15}
+                                type="emiratesid"
+                            // maskPattern={"000-0000-0000000-0"}
+                            />
+                        </div>
+                        <div className="mb-24">
+                            <label className="label">
+                                {radioPlaceholder}
+                            </label>
+                        </div>
+                        <div className="mb-24 mb-lg-48 d-flex flex-column flex-lg-row">
+                            <div className="mr-0 mr-lg-32 mb-24 mb-lg-0">
+                                <MuiCheckBox onChange={emailRadioChangeHandler} name="optInEmail" labelTxt={emailRadioPlaceholder} />
+                            </div>
+                            <div className="mr-0 mr-lg-32 mb-24 mb-lg-0">
+                                <MuiCheckBox onChange={smsRadioChangeHandler} name="optInSMS" labelTxt={smsRadioPlaceholder} />
+                            </div>
+                            <div className="mr-0">
+                                <MuiCheckBox onChange={telephoneCallChangeHandler} name="optInTelephoneCalls" labelTxt={telephoneCallPlaceholder} />
+                            </div>
+                        </div>
+                        <div className="mb-24 mb-lg-48">
+                            <label className="label">
+                                {note}
+                            </label>
+                        </div>
+                        {generalValidationMsg && generalValidationMsg.length > 0 && <p className="form-general-error">{generalValidationMsg}</p>}
+                        <div className="mb-0">
+                            <Button
+                                content={submitCtaModel}
+                                onClick={(e: any) => {
+                                    handleSubmit(e);
+                                    // setFormValidity(false);
+
+                                }}
+                                disabled={!formValidity}
+                                buttonBackground="black"
+                                type="submit"
+                            >
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>}
+        {showOTPScreen && <section className="pt-xl-55 pt-24 pb-xl-55 pb-24 global-form">
+            <div className="container-small">
+                <Heading tag={"h3"} tagClass="h3" classes="gradient-title mb-24">
+                    {otpTitle}
+                </Heading>
+                <div className="global-form__wrapper">
+                    <Heading tag={"h5"}>{otpDescription}</Heading>
+                    <div className="global-form__field-set">
+                        <div className="mb-24 mb-lg-48">
+                            <MuiInput
+                                label={""}
+                                placeholderText={otpPlaceholderText}
+                                name="otpCode"
+                                handleChange={otpCodeChangeHandler}
+                                required={true}
+                                error={otpErrorMsg && otpErrorMsg.length > 0 ? true : false}
+                                helpText={otpErrorMsg}
+                                max={6}
+                            />
+                        </div>
+                        {generalValidationMsg && generalValidationMsg.length > 0 && <p className="form-general-error">{generalValidationMsg}</p>}
+                        {otpCountdownDesc && otpCountdownDesc.length > 0 &&
+                            <CountdownTimer
+                                seconds={countDown}
+                                otpCountdownDesc={otpCountdownDesc}
+                                secondsUnit={secondsUnit}
+                                minutesUnit={minutesUnit}
+                                otpCountdownExpiredDescription={otpCountdownExpiredDescription}
+                            />
+                        }
+                        <div className="mb-0">
+                            <Button
+                                content={otpCtaModel}
+                                onClick={otpInitialization}
+                                disabled={!formValidity}
+                                buttonBackground="black"
+                                type="submit"
+                            >
+                            </Button>
+                            {/* <Button
+                                content={otpResendCtaModel}
+                                onClick={() => {
+                                    setOtpRetries((prevState: number) => prevState - 1);
+                                    setCountDown(otpCountdown);
+                                    setResendDisable(true);
+                                    // otpInitialization();
+                                    console.log('resend')
+                                }}
+                                disabled={resendDisable}
+                                buttonBackground="black"
+                                secondary={true}
+                                classes="ml-10"
+                                type="submit"
+                            >
+                            </Button> */}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>}
+        {showThanksMsg && <section className="pt-xl-55 pt-24 pb-xl-55 pb-24 global-form">
+            <div className="container-small">
+                <Heading tag={"h3"} tagClass="h3" classes="gradient-title mb-24">
+                    {thankYouTitle}
+                </Heading>
+                <div className="global-form__wrapper">
+                    <div className="h5" dangerouslySetInnerHTML={{ __html: (formData?.optInEmail || formData?.optInTelephoneCalls || formData?.optInSMS) ? thankYouDescriptionOptIn : thankYouDescriptionOptOut }}></div>
+                    <div className="global-form__field-set">
+                        {generalValidationMsg && generalValidationMsg.length > 0 && <p className="form-general-error">{generalValidationMsg}</p>}
+                        <div className="mb-0">
+                            <Button
+                                content={thankYouCtaModel}
+                                onClick={() => {
+                                    setShowForm(true);
+                                    setShowOTPScreen(false);
+                                    setShowThanksMsg(false);
+                                    setGeneralValidationMsg("");
+                                    setFormData({
+                                        customerName: "",
+                                        customerEmailId: "",
+                                        customerMobileNumber: "",
+                                        emiratesIdNumber: "",
+                                        Language: locale,
+                                        optInEmail: false,
+                                        optInSMS: false,
+                                        optInTelephone: false,
+                                        GoogleRecaptchaConfigGuid: googleRecaptchaConfig && googleRecaptchaConfig[0]?.contentLink?.guidValue,
+                                        GReCaptchaToken: "",
+                                    });
+                                }}
+                                buttonBackground="black"
+                                type="submit"
+                            >
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>}
+    </>
+}
+
+export default ConsentFormComponent
+
+
+IBootstrapper
+IViewManager
+
+Pages mapping with index.ts
+Editable field.
+Error page 
+
+
+
+Optimizely : -
+
+Optimizely with SQL Server : -
+
+EPIServer.Net.CLI
+
+Episode 1 : -
+=========
+ConnectionString in 
+1. AppSetting.Development.json and in 
+2. AppSetting.Json
+
+
+Episode 2: -
+==========
+
+Multiple Domain with in .csproj file for different culture or language environment
+running on different port.
+
+
+Port number inside vs --> SolutionName --> config --> applicationhost.config
+
+Episode 3: -
+==========
+
+Fragments
+StaticFragment
+UrlFragment
+ContentFragment
+HttpContent.Render
+PersonalizedContentFragment
+XHtmlString
+PermenantLinkUtility
+
+ServiceLocator.Current.GetInstance<IContentLoader>().Get<IContent>(ContentGUID)
+LocalizationService
+TemplateModel
+IContentData
+IHtmlHelper
+IConfigurableModule
+
+PageType
+PageDefinition
+
+LinkItemCollection		in Optimizely CMS
+PageReference			in Optimizely CMS
+
+Database : -
+========
+
+tblActivityLog				=====> May be Pages
+tblBigTable					=====> Having Component and other things related to Optimizely CMS.
+
+tblActivityLog						LogData
+tblContentLanguage                  Name
+tblWorkContentProperty              LongString
+tblWorkContent                      LongString
+tblContentProperty                  Name
+tblCategory                         CategoryDescription
+
+
+SELECT * FROM tblActivityLog			
+SELECT * FROM tblContentLanguage      
+SELECT * FROM tblWorkContentProperty  
+SELECT * FROM tblWorkContent          
+SELECT * FROM tblContentProperty      
+SELECT * FROM tblCategory             
+
+
+
+Content Type 			======>		Have properties which are rendered in Content Template
+Content Template		======>
+Pages					======>
+Block					======>		Shared between different Content templates and also as a property type
+Forms					======>
+Visual Navigation		======>
+Indexed Searching		======>
+Scheduled Jobs			======>
+Navigating Content		======>
+Categories				======>
+Personalization			======>
+
+Foundation project (Sample project) :-
+===================================
+
+1.	FrontLine Services	=======> A CMS Starter
+2.  Mosey				=======> A Commerce Starter
+
+
+
+Digital Asset Management	=====> For Media management in Optimizely CMS
+
+
+
+Creating WorkFlow
+
+
+Layouts			====> Are inheriting from IPageViewModel<SitePageData> SitePageData inheriting from PageData.
+Block			====> BlockData
+Page			====> SitePageData ----> PageData
+
+122 Pages read from cmsdevfun-coursebook-cms12.pdf
+
+Important Points : -
+================
+
+1. PageControllerBase<StartPage>		===> Starting Point of the Application.
+
+Image can be reference as ContentReference
+
+[UIHint(UIHint,Image)]					=======> For forcing this to be only of Image
+public virtual ContentReference? Image{get;set;}
+
+
+Block don't have URL. They can only be rendered inside Page.
+
+
+IContentLoader is used to load the Content.
+Whereas IContentRepository can be used to manipulate the Content.

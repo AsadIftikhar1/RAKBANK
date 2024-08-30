@@ -1,0 +1,170 @@
+Microservices in .net
+1. Docker
+2. RabbitMQ
+3. GraphQL,
+4. Kubernetes
+
+
+Docker : -
+1. Review of Docker
+2. Containerize platform services
+3. Pushing to Docker Hub.
+4. Intro to Kubernetes.
+5. Kubernetes architecture.
+6. Deploy Platform services.
+7. External Network Access
+
+Creating Docker images
+Deploying Platform services in Kubernetes
+1. Ocoloet API Gateway
+
+Starting the Command services.
+=============================
+1. Creating Http client between the services Synchronous or Asynchronous request.
+2. Deploy command services to Kubernetes
+3. Internal networking
+4. API Gateway
+
+SQL SERVER :- 
+==========
+1. Persistent volume claims.
+2. Kubernetes secrets.
+3. Deploy SQL Server to Kubernetes.
+4. Revisit platform services.
+
+Multi Resource API :-
+==================
+1. Review of endpoint for Command services.
+2. Data layer controller and action.
+
+Message Bus/RABBITMQ : -
+====================
+1. Solution architecture overview.
+2. RabbitMQ Overview.
+3. Deploy RabbitMQ to Kubernetes.
+4. Test
+
+Aschronous messaging : -
+====================
+1. Adding a message bus publisher to perform service.
+2. Event processing.
+3. Adding an event listener to the command service.
+
+GRPC : -
+====
+1. Overview of GRPC.
+2. Final Kubernetes networking.
+3. Adding GRPC Server to platform service.
+4. Creating a "proto" file.
+5. Adding a grpc client to the command services.
+6. Deploy and Test.
+
+
+Requirements :-
+============
+1. dot net 5+ 
+2. Docker desktop free Kubernetes
+3. An account on Docker hub.
+4. Insomnia or Postman.
+
+
+Free Kubernetes Cheat Sheet : -
+===========================
+1. Docker and Kubernetes command.
+2. Kubernetes application architecture reference.
+3. Kubernetes object Glossary.
+4. Go to https://Dotnetplaybook.com
+5. Subscribe and email you with a free downlaod link
+
+
+Github.com/binarythistle
+
+
+ * Responsible for doing 1 thing well.
+ * So not too much communication.
+
+ * But microservices means two thing need to communicate with each other to complete the website.
+ 
+ 
+ Issues with Monolith and other architecture.
+ 
+ *. If you are using third party then it will be for full project it will be locked in.
+ *. Very hard to change and to scale.
+ 
+ Why to use Microservices.
+ *. Different technology stack they are build on.
+ *. One team want to change it and other don't then each business contain their services.
+ *. One service can break. Other service will continue to run means when error come on application level.
+ *. Scalable service not entire application.
+ *. They can be build on any technology stack.
+ *. Highly replacable and swappable.
+ *. 
+ 
+ 
+*  One Platform service published the message and command service with subscribe the 
+   data to get the data from the platform service.
+ 
+*  GRPC IS Synchronous not event driven.
+
+* For message publisher and subscribe do they need to be on the same computer/server.
+
+* Is RabbitMQ Asynchronous or synchronous. Question.
+
+Code : -
+1. Create PlatformService.
+    Package : -
+	1. AutoMapper.Extension.Microsoft.DependencyInjection
+	2. Microsoft.EntityFramework.Core 8.0
+	3. Microsoft.EntityFramework.Core.Design Only at design time not runtime.
+	4. Microsoft.EntityFramework.Core.InMemory.
+	5. Microsoft.EntityFrameworkCore.SqlServer
+ 
+In startup.cs we can check if it's a development environment than we can use different database and if it's in Production than we can use different database.
+
+Like In Development environment we can use InMemory database.
+And In production we can use Sql Server database.
+In Memory database if the service restart you will lost all of the data in EF Core In Memory.
+
+DTO Data transfer Object : -
+========================
+DTO are external representation of Internal model means data we donot want to expose.
+As if we share internal model with them we are making contract with external service
+everytime we need to change Internal and inform external.
+
+			//Used to return the URL to check wheter the item has created with status code 201;
+			return CreatedAtRoute(nameof(GetPlatformById), new { Id=platformcreated.ID},platformReadDto);
+			
+What is Docker?
+==============
+Docker is a Containerization PLATFORM meaning that it enables you to package
+your application into Images. and run them as Containers on any platform that
+can run Docker.
+
+The problem was occuring when we deploy our application from other than our current os then we do need to install the all of the dependencies or packages which are currently supported in Microsoft Mac,Linux can run docker images.
+
+Docker create docker images of our application and than those application can run
+on the container.
+
+* With docker any containerization platform .Net development can be done on Linux.
+
+* When our containers died it automatically creates new container.
+* Scales out Container Horizontally or Vertically
+* Previously Virtual machine VM Ware was there.
+
+
+So we have a Dockerfile we run it through Docker Engine and then DockerImage is created.And finally push it to Docker Hub.
+
+
+Google Dot net Docker.
+
+https://docs.docker.com/language/dotnet/containerize/
+https://www.textcontrol.com/blog/2023/09/23/deploying-an-aspnet-core-web-app-with-docker/
+
+When Docker desktop is used to run the image inside container
+Kubernetes also comes by default and it is running 
+And make sure in setting that the Kubernetes is enabled.
+It is on a SINGLE NODE CLUSTER IT IS NOT ENABLED BY DEFAULT.
+
+
+When we select Docker tick from visual studio it will automatically create
+Docker file and make our application run on Docker Desktop and our application will be visible and we can also run it from command line if not using visual studio.

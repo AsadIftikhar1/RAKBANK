@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Using Include="EPiServer" />
+		<Using Include="EPiServer.Core" />
+		<Using Include="EPiServer.DataAbstraction" />
+		<Using Include="EPiServer.DataAnnotations" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="EPiServer.CMS" Version="12.31.1" />
+		<PackageReference Include="System.Text.Json" Version="8.0.4" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Include="Resources\Translations\**\*" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\APIExplorer\APIExplorer.csproj" />
+	  <ProjectReference Include="..\RAKBANK.ContentActionsAPI\RAKBANK.ContentActionsAPI.csproj" />
+	</ItemGroup>
+</Project>
