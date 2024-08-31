@@ -60,7 +60,7 @@ namespace RAKBANK.Controller
         /// </summary>
         /// <param name="p_ProductRequestDto"></param>
         /// <returns></returns>
-        [HttpPut("{id}")]
+        [HttpPut("UpdateProduct/{id}")]
         public ActionResult<ProductItemBlock> UpdateProduct([FromBody] ProductRequestDto p_ProductRequestDto)
         {
             dynamic res = (ContentReference)null;
@@ -123,7 +123,7 @@ namespace RAKBANK.Controller
                     ContentGuid = Guid.NewGuid(),
                     ContentLink = SaveProductItems
                 };
-                Product.ProductArea.Items.Add(AddblockItem);
+                Product?.ProductArea.Items.Add(AddblockItem);
                 var SavedProductItem = _contentRepository.Get<ProductItemBlock>(SaveProductItems).CreateWritableClone() as ProductItemBlock;
                 var imageReference = ImageUploadService.UploadImageFromUrl(bytes, filename, fileExtension, SaveProductItems);
                 SavedProductItem.image = imageReference;

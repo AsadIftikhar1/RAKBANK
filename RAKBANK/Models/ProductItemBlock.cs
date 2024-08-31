@@ -39,7 +39,5 @@ namespace RAKBANK.Models
         public string? id { get; set; }
         public string? DisplayName { get; set; }
         public string? Description { get; set; }
-        public string? Image { get; set; }
-        public IFormFile? price { get; set; }
     }
 }

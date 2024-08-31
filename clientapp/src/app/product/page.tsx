@@ -4,7 +4,7 @@ import { Product } from '../interfaces/product';
 import { ProductListing } from '../interfaces/product';
 import styles from '../css/products.module.css';
 import { useEffect, useState } from 'react';
-import CreateProduct from './createproduct';
+import EditProduct from './editproduct'; // Import the new component
 
 const ProductsPage: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -17,9 +17,13 @@ const ProductsPage: React.FC = () => {
                 const response = await fetch('https://localhost:5000/api/ProductsListing');
                 if (!response.ok) throw new Error('Network response was not ok');
                 const data: ProductListing[] = await response.json();
-                
-                if (data.length > 0) {
+
+                console.log('Fetched data:', data);
+
+                if (data.length > 0 && data[0].childProducts) {
                     setProducts(data[0].childProducts);
+                } else {
+                    console.error('Unexpected data structure:', data);
                 }
             } catch (error) {
                 console.error('Failed to fetch products:', error);
@@ -38,7 +42,8 @@ const ProductsPage: React.FC = () => {
 
     const saveProduct = async (updatedProduct: Product) => {
         try {
-            const response = await fetch(`https://localhost:5000/api/ProductsListing/${updatedProduct.id}`, {
+            console.log(updatedProduct);
+            const response = await fetch(`https://localhost:5000/api/ProductsListing/UpdateProduct/${updatedProduct.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -59,20 +64,19 @@ const ProductsPage: React.FC = () => {
 
     const deleteProduct = async (id: number) => {
         try {
-            const url=`https://localhost:5000/api/ProductsListing/DeleteProduct/${id}`;
-            console.log(url);
+            const url = `https://localhost:5000/api/ProductsListing/DeleteProduct/${id}`;
+            console.log('Delete URL:', url);
             const response = await fetch(url, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
-    
+
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-    
-            // Remove the product from the local state
+
             setProducts(products.filter(p => p.id !== id));
         } catch (error) {
             console.error('Failed to delete product:', error);
@@ -81,11 +85,12 @@ const ProductsPage: React.FC = () => {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
+
         if (editingProduct) {
-            setEditingProduct({
-                ...editingProduct,
-                [name]: value,
-            });
+            setEditingProduct(prevProduct => ({
+                ...prevProduct,
+                [name]: value
+            }) as Product);  // Ensure TypeScript understands the type correctly
         }
     };
 
@@ -97,9 +102,9 @@ const ProductsPage: React.FC = () => {
                 className={styles.productImage} 
             />
             <div className={styles.productInfo}>
-                <h2 className={styles.productTitle}>Name: {product.displayName}</h2>
-                <p className={styles.productDescription}>Description: {product.description}</p>
-                <span className={styles.productPrice}>Price: {product.price}</span>
+                <h2 className={styles.productTitle}>{product.displayName}</h2>
+                <p className={styles.productDescription}>{product.description}</p>
+                <span className={styles.productPrice}>{product.price}</span>
                 <div className={styles.buttonContainer}>
                     <button onClick={() => startEditing(product)}>Edit</button>
                     <button onClick={() => deleteProduct(product.id)} className={styles.deleteButton}>Delete</button>
@@ -107,46 +112,6 @@ const ProductsPage: React.FC = () => {
             </div>
         </article>
     );
-
-    const EditProduct: React.FC = () => {
-        if (!editingProduct) return null;
-
-        return (
-            <div className={styles.editContainer}>
-                <h2>Edit Product</h2>
-                <form onSubmit={(e) => { e.preventDefault(); if (editingProduct) saveProduct(editingProduct); }}>
-                    <label>
-                        Name:
-                        <input 
-                            type="text" 
-                            name="displayName" 
-                            value={editingProduct.displayName} 
-                            onChange={handleInputChange} 
-                        />
-                    </label>
-                    <label>
-                        Description:
-                        <textarea 
-                            name="description" 
-                            value={editingProduct.description} 
-                            onChange={handleInputChange} 
-                        />
-                    </label>
-                    <label>
-                        Price:
-                        <input 
-                            type="text" 
-                            name="price" 
-                            value={editingProduct.price} 
-                            onChange={handleInputChange} 
-                        />
-                    </label>
-                    <button type="submit">Save</button>
-                    <button type="button" className={styles.cancelButton} onClick={cancelEditing}>Cancel</button>
-                </form>
-            </div>
-        );
-    };
 
     return (
         <div>
@@ -156,11 +121,15 @@ const ProductsPage: React.FC = () => {
                         <ProductCard key={product.id} product={product} />
                     ))}
                 </section>
-                <EditProduct />
+                <EditProduct 
+                    editingProduct={editingProduct}
+                    handleInputChange={handleInputChange}
+                    saveProduct={saveProduct}
+                    cancelEditing={cancelEditing}
+                />
             </main>
         </div>
     );
-    
 };
 
 export default ProductsPage;
