@@ -11,15 +11,15 @@ namespace RAKBANK.Models
     {
         [CultureSpecific]
         [Display(GroupName = SystemTabNames.Content, Order = 10)]
-        public virtual required string DisplayName { get; set; }
+        public virtual string DisplayName { get; set; }
 
         [CultureSpecific]
         [Display(GroupName = SystemTabNames.Content, Order = 20)]
-        public virtual required string Description { get; set; }
+        public virtual string Description { get; set; }
 
         [CultureSpecific]
         [Display(GroupName = SystemTabNames.Content, Order = 40)]
-        public virtual required string price { get; set; }
+        public virtual string price { get; set; }
 
         [Display(Name = "Image",
             Description = "Insert Image Url here", Order = 30)]
@@ -39,5 +39,6 @@ namespace RAKBANK.Models
         public string? id { get; set; }
         public string? DisplayName { get; set; }
         public string? Description { get; set; }
+        public string? price { get; set; }
     }
 }

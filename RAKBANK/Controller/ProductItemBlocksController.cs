@@ -21,7 +21,13 @@ namespace RAKBANK.Controller
         private readonly SiteDefinition _siteDefinition;
         private readonly ProductService _productService;
         private readonly UrlResolver _urlResolver;
-  
+
+        public IContentLoader Object1 { get; }
+        public IContentRepository Object2 { get; }
+        public EPiServer.Licensing.Services.SiteDefinition Object3 { get; }
+        public ProductService Object4 { get; }
+        public UrlResolver Object5 { get; }
+
         public ProductsListingController(IContentLoader contentLoader,
             IContentRepository contentRepository,
             SiteDefinition siteDefinition,
@@ -45,9 +51,15 @@ namespace RAKBANK.Controller
             IEnumerable<ProductItemBlock> productListingChildBlock = [];
             try
             {
-                var productsListingBlock = _contentRepository.Get<StartPage>(new ContentReference(_siteDefinition.StartPage.ID));
-                productlisting = _productService.BuildProductListTab(productsListingBlock.ProductListingArea, ContentLanguage.PreferredCulture, _contentRepository);
-
+                if (_siteDefinition.StartPage != null)
+                {
+                    var productsListingBlock = _contentRepository.Get<StartPage>(new ContentReference(_siteDefinition.StartPage.ID));
+                    productlisting = _productService.BuildProductListTab(productsListingBlock.ProductListingArea, ContentLanguage.PreferredCulture, _contentRepository);
+                }
+                else
+                {
+                    return Ok();
+                }
             }
             catch (Exception ex)
             {
@@ -107,7 +119,7 @@ namespace RAKBANK.Controller
             dynamic res = (ContentReference)null;
             try
             {
-                var bytes=ImageUploadService.ConvertToByteArrayAsync(image);
+                var bytes = ImageUploadService.ConvertToByteArrayAsync(image);
                 var filename = displayName;
                 var fileExtension = ImageUploadService.GetFileExtension(image);
                 var Product = _contentRepository.Get<ProductsListingBlock>(new ContentReference(15)).CreateWritableClone() as ProductsListingBlock;

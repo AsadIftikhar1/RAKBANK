@@ -12,18 +12,18 @@ namespace RAKBANK.Models
     {
         [CultureSpecific]
         [Display(GroupName = SystemTabNames.Content, Order = 10)]
-        public virtual required string DisplayName { get; set; }
+        public virtual string DisplayName { get; set; }
 
         [CultureSpecific]
         [Display(GroupName = SystemTabNames.Content, Order = 20)]
-        public virtual required string Description { get; set; }
+        public virtual string Description { get; set; }
 
         [Display(Name = "Product Child Components",
             Description = "Insert Product childs here"
             , Order = 30)]
         [UIHint(UIHint.Block)]
         [AllowedTypes(AllowedTypes = new[] { typeof(ProductItemBlock) })]
-        public virtual required ContentArea ProductArea { get; set; }
+        public virtual ContentArea ProductArea { get; set; }
 
     }
     public class ProductListingViewModel
