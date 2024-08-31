@@ -58,16 +58,21 @@ const ProductsPage: React.FC = () => {
 
     const deleteProduct = async (id: number) => {
         try {
-            const response = await fetch(`https://localhost:5000/api/ProductsListing/${id}`, {
+            const url=`https://localhost:5000/api/ProductsListing/DeleteProduct/${id}`;
+            console.log(url);
+            const response = await fetch(url, {
                 method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
             });
-
+    
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-
+    
+            // Remove the product from the local state
             setProducts(products.filter(p => p.id !== id));
-            setEditingProduct(null);
         } catch (error) {
             console.error('Failed to delete product:', error);
         }

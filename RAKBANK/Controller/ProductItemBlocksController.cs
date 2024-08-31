@@ -74,17 +74,13 @@ namespace RAKBANK.Controller
                 if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
+
                 }
-                //var startpage = _contentRepository.Get<StartPage>(new ContentReference(_siteDefinition.StartPage.ID));
-                //var productsListingBlock = _contentRepository.GetChildren<ProductItemBlock>(startpage.ProductListingArea);
-                //var ProductItem=productsListingBlock.SelectMany(x => x.childProducts)
-                //                 .FirstOrDefault(cp => cp.id == p_ProductRequestDto.id);
-              
                 var ProductItem = _contentRepository.Get<ProductItemBlock>(new ContentReference(p_ProductRequestDto.id))
                     .CreateWritableClone() as ProductItemBlock;
-                ProductItem.DisplayName = p_ProductRequestDto.DisplayName;
-                ProductItem.Description = p_ProductRequestDto.Description;
-                ProductItem.price = p_ProductRequestDto.price;
+                ProductItem.DisplayName = p_ProductRequestDto?.DisplayName;
+                ProductItem.Description = p_ProductRequestDto?.Description;
+                ProductItem.price = p_ProductRequestDto?.price;
                 //ProductItem.image = p_ProductRequestDto.Image;
 
                 var SaveProductItems = _contentRepository.Save((IContent)ProductItem, SaveAction.Publish, AccessLevel.NoAccess);
@@ -100,7 +96,7 @@ namespace RAKBANK.Controller
         /// </summary>
         /// <param name="p_ProductRequestDto"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("{id}")]
         public ActionResult<ProductItemBlock> PostProduct([FromBody] ProductRequestDto p_ProductRequestDto)
         {
             dynamic res = (ContentReference)null;
@@ -143,16 +139,16 @@ namespace RAKBANK.Controller
         /// </summary>
         /// <param name="p_ProductRequestDto"></param>
         /// <returns></returns>
-        [HttpDelete]
-        public ActionResult<ProductItemBlock> DeleteProduct([FromBody] ProductRequestDto p_ProductRequestDto)
+        [HttpDelete("DeleteProduct/{id}")]
+        public ActionResult<ProductItemBlock> DeleteProduct(int id)
         {
             try
             {
-                if (p_ProductRequestDto.id == null)
+                if (id == null)
                 {
                     return BadRequest("Product is null.");
                 }
-                var BlockToBeDeleted = _contentLoader.Get<ProductItemBlock>(new ContentReference(p_ProductRequestDto.id));
+                var BlockToBeDeleted = _contentLoader.Get<ProductItemBlock>(new ContentReference(id));
                 dynamic BlockDeletedReference = (ContentReference)null;
                 if (BlockToBeDeleted != null)
                 {
