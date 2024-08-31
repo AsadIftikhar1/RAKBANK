@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System;
 using RAKBANK.ContentActionsAPI.Controller;
 using RAKBANK.Models;
-using HeadlessCms.Features.Shared;
 using EPiServer.Licensing.Services;
 using EPiServer.Web;
 
@@ -18,12 +17,10 @@ namespace HeadlessCms.Features.PageListBlock
     [ContentActionApiController(typeof(ProductsListingBlock))]
     public class ProductItemBlockApiController : ContentActionApiController<ProductsListingBlock>
     {
-        private readonly ContentLocator _contentLocator;
         private readonly IContentLoader _contentLoader;
         private readonly ISiteDefinitionRepository _siteDefinitionRepository;
-        public ProductItemBlockApiController(ContentLocator contentLocator, IContentLoader contentLoader, ISiteDefinitionRepository siteDefinitionRepository)
+        public ProductItemBlockApiController(IContentLoader contentLoader, ISiteDefinitionRepository siteDefinitionRepository)
         {
-            _contentLocator = contentLocator;
             _contentLoader = contentLoader;
             _siteDefinitionRepository = siteDefinitionRepository;
         }

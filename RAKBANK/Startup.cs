@@ -1,3 +1,4 @@
+using APIExplorer;
 using EPiServer.Cms.Shell;
 using EPiServer.Cms.UI.AspNetIdentity;
 using EPiServer.ContentApi.Core.DependencyInjection;
@@ -21,12 +22,11 @@ namespace RAKBANK
         {
             if (_webHostingEnvironment.IsDevelopment())
             {
-                AppDomain.CurrentDomain.SetData("DataDirectory", Path.Combine(_webHostingEnvironment.ContentRootPath, "App_Data"));
+                 AppDomain.CurrentDomain.SetData("DataDirectory", Path.Combine(_webHostingEnvironment.ContentRootPath, "App_Data"));
 
                 services.Configure<SchedulerOptions>(options => options.Enabled = false);
             }
-
-            // Enable Cors
+            services.AddApiExplorer(new Uri("https://localhost:5000/"));
             services.AddCors(options =>
             {
                 options.AddDefaultPolicy(
@@ -34,13 +34,11 @@ namespace RAKBANK
                     {
                         builder
                             .WithExposedContentDeliveryApiHeaders()
-                            // .WithExposedContentDefinitionApiHeaders()
                             .AllowAnyMethod()
                             .AllowCredentials();
                     });
             });
 
-            // Add Delivery API to Application
             services
                 .AddContentDeliveryApi()
                 .WithSiteBasedCors();
@@ -53,14 +51,15 @@ namespace RAKBANK
                 .AddAdminUserRegistration()
                 .AddEmbeddedLocalization<Startup>();
 
-            services.AddSwaggerGen(c =>
+            services.AddSwaggerGen(c=>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "RaK Bank", Version = "v1" });
             });
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -70,18 +69,18 @@ namespace RAKBANK
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.UseSwagger();
-
-            // Enable middleware to serve Swagger UI
-            app.UseSwaggerUI(c =>
+            app.UseCors();
+            app.UseSwaggerUI( c =>
             {
-                c.SwaggerEndpoint("/swagger/v1/swagger.json", "My API V1");
-                c.RoutePrefix = string.Empty; // Set Swagger UI at app's root
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Rak Bank V1");
+               c.RoutePrefix = string.Empty; // Set Swagger UI at app's root
             });
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapContent();
+                endpoints.MapControllers();
             });
         }
     }

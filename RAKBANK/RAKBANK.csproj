@@ -23,18 +23,22 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Compile Remove="clientapp\**" />
 	  <Compile Remove="Client\**" />
+	  <Compile Remove="Swagger\**" />
+	  <Content Remove="clientapp\**" />
 	  <Content Remove="Client\**" />
+	  <Content Remove="Swagger\**" />
+	  <EmbeddedResource Remove="clientapp\**" />
 	  <EmbeddedResource Remove="Client\**" />
+	  <EmbeddedResource Remove="Swagger\**" />
+	  <None Remove="clientapp\**" />
 	  <None Remove="Client\**" />
+	  <None Remove="Swagger\**" />
 	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\APIExplorer\APIExplorer.csproj" />
 	  <ProjectReference Include="..\RAKBANK.ContentActionsAPI\RAKBANK.ContentActionsAPI.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="clientapp\src\app\product\" />
 	</ItemGroup>
 </Project>

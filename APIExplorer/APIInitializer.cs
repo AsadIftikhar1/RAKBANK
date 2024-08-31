@@ -1,7 +1,8 @@
 ﻿using APIExplorer.ApiExplorer;
 using APIExplorer.ApiExplorer.Infrastructure;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace APIExplorer
 {
@@ -25,13 +26,10 @@ namespace APIExplorer
         }
         public static IServiceCollection AddApiExplorer(this IServiceCollection services, ApiExplorerOptions options)
         {
-            string AuthName = "OptiContentCloud";
-            var wellKnown = options.MasterUrl is not null ? new Uri(options.MasterUrl, ".well-known/openid-configuration") : new Uri("/.well-known/openid-configuration", UriKind.Relative);
-
             services.AddSingleton(options);
 
-            //Add Swagger
-            services.AddSwaggerGen(swaggerOptions => {
+            services.AddSwaggerGen(swaggerOptions =>
+            {
                 swaggerOptions.SwaggerDoc(options.DocumentName, options.CreateApiInfo());
                 swaggerOptions.ResolveConflictingActions(ContentTypeApiDescriptionConflictResolver.Resolve);
             });
@@ -41,10 +39,11 @@ namespace APIExplorer
         }
         public static IApplicationBuilder UseApiExplorer(this IApplicationBuilder app, bool mapEndpoints = true)
         {
-          var options = app.ApplicationServices.GetService<ApiExplorerOptions>();
-            
+            var options = app.ApplicationServices.GetService<ApiExplorerOptions>();
+
             app.UseSwagger();
-            app.UseSwaggerUI(c => {
+            app.UseSwaggerUI(c =>
+            {
                 var endpoint = $"/swagger/{options.DocumentName}/swagger.json";
                 c.SwaggerEndpoint(endpoint, options.ApplicationName);
                 c.HeadContent = "<style>.swagger-ui .topbar { display: none; } .swagger-ui .information-container.wrapper .info { margin: 20px 0px; }</style>";
