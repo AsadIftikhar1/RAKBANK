@@ -1,11 +1,7 @@
-﻿using crypto;
-using EPiServer;
-using EPiServer.Core;
-using EPiServer.DataAccess;
+﻿using EPiServer.DataAccess;
 using EPiServer.Security;
 using Microsoft.AspNetCore.Mvc;
 using RAKBANK.Models;
-using RAKBANK.Models.Pages;
 
 namespace RAKBANK.Controller
 {
@@ -66,7 +62,7 @@ namespace RAKBANK.Controller
                     ContentLink = SaveProductItems
                 };
                 Product.ProductArea.Items.Add(AddblockItem);
-                 var res= _contentRepository.Save((IContent)Product, SaveAction.Publish, AccessLevel.NoAccess);
+                var res = _contentRepository.Save((IContent)Product, SaveAction.Publish, AccessLevel.NoAccess);
 
             }
             catch (Exception ex)
@@ -98,7 +94,7 @@ namespace RAKBANK.Controller
                 var itemToRemove = contentArea.Items.FirstOrDefault(x => x.ContentLink.ID == BlockDeletedReference.ID);
 
                 Product.ProductArea.Items.Remove(itemToRemove);
-                var blockReferenceRemoved=_contentRepository.Save((IContent)Product, EPiServer.DataAccess.SaveAction.Publish, EPiServer.Security.AccessLevel.NoAccess);
+                var blockReferenceRemoved = _contentRepository.Save((IContent)Product, EPiServer.DataAccess.SaveAction.Publish, EPiServer.Security.AccessLevel.NoAccess);
                 _contentRepository.Delete(BlockDeletedReference, true, AccessLevel.NoAccess);
             }
             catch (Exception ex)

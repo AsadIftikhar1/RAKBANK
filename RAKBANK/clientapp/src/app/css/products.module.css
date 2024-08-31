@@ -1,0 +1,152 @@
+﻿.container {
+    width: 80%;
+    margin: 0 auto;
+}
+
+.main {
+    padding: 2rem 0;
+}
+
+.productList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.productCard {
+    border: 1px solid #ddd;
+    padding: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    width: calc(33.333% - 1rem);
+    position: relative;
+    /* Ensure relative positioning for absolute positioning of edit and delete buttons */
+    overflow: hidden;
+    /* Prevent content from overflowing */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.productImage {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.productInfo {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.productTitle {
+    font-size: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.productDescription {
+    font-size: 1rem;
+    margin: 0.5rem 0;
+}
+
+.productPrice {
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 1rem;
+}
+
+.buttonContainer {
+    display: flex;
+    gap: 0.5rem;
+    /* Space between buttons */
+    margin-top: auto;
+    /* Push buttons to the bottom of the card */
+}
+
+.productCard button {
+    padding: 0.5rem 1rem;
+    background-color: #0070f3;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+    .productCard button:hover {
+        background-color: #005bb5;
+    }
+
+.deleteButton {
+    background-color: red;
+    color: white;
+}
+
+    .deleteButton:hover {
+        background-color: #cc0000;
+    }
+
+.editContainer {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+    .editContainer h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #333;
+    }
+
+    .editContainer form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .editContainer label {
+        display: flex;
+        flex-direction: column;
+        font-size: 1rem;
+        color: #333;
+    }
+
+    .editContainer input, .editContainer textarea {
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        font-size: 1rem;
+    }
+
+    .editContainer textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .editContainer button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        color: #fff;
+        background-color: #0070f3;
+        transition: background-color 0.3s ease;
+    }
+
+        .editContainer button:hover {
+            background-color: #005bb5;
+        }
+
+    .editContainer .cancelButton {
+        background-color: #ccc;
+        color: #000;
+    }
+
+        .editContainer .cancelButton:hover {
+            background-color: #999;
+        }
