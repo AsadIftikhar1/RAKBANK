@@ -17,16 +17,29 @@ namespace RAKBANK.Models
         [Display(GroupName = SystemTabNames.Content, Order = 20)]
         public virtual required string Description { get; set; }
 
+        [CultureSpecific]
+        [Display(GroupName = SystemTabNames.Content, Order = 40)]
+        public virtual required string price { get; set; }
+
         [Display(Name = "Image",
             Description = "Insert Image Url here", Order = 30)]
-        public virtual required string imag { get; set; }
+        [UIHint(UIHint.Image)]
+        public virtual ContentReference image { get; set; }
     }
-
+    public class ProductItemViewModel
+    {
+        public string id { get; set; }
+        public string DisplayName { get; set; }
+        public string Description { get; set; }
+        public string image { get; set; }
+        public string price { get; set; }
+    }
     public class ProductRequestDto
     {
-        public string ContentLink { get; set; }
+        public string id { get; set; }
         public string DisplayName { get; set; }
         public string Description { get; set; }
         public string Image { get; set; }
+        public string price { get; set; }
     }
 }

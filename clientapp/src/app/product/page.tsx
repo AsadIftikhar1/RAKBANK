@@ -1,18 +1,31 @@
-'use client'; 
+'use client';
 
 import { Product } from '../interfaces/product';
+import { ProductListing } from '../interfaces/product';
 import styles from '../css/products.module.css';
-import { useState } from 'react';
-
-const initialProducts: Product[] = [
-    { id: 1, name: 'Product 1', description: 'This is a description of Product 1.', price: '$19.99', image: 'https://via.placeholder.com/150' },
-    { id: 2, name: 'Product 2', description: 'This is a description of Product 2.', price: '$29.99', image: 'https://via.placeholder.com/150' },
-    { id: 3, name: 'Product 3', description: 'This is a description of Product 3.', price: '$39.99', image: 'https://via.placeholder.com/150' },
-];
+import { useEffect, useState } from 'react';
 
 const ProductsPage: React.FC = () => {
-    const [products, setProducts] = useState<Product[]>(initialProducts);
+    const [products, setProducts] = useState<Product[]>([]);
     const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+    const BASE_URL = 'https://localhost:5000/'; // Define your base URL
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await fetch('https://localhost:5000/api/ProductsListing');
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data: ProductListing[] = await response.json();
+                
+                if (data.length > 0) {
+                    setProducts(data[0].childProducts);
+                }
+            } catch (error) {
+                console.error('Failed to fetch products:', error);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     const startEditing = (product: Product) => {
         setEditingProduct(product);
@@ -22,32 +35,65 @@ const ProductsPage: React.FC = () => {
         setEditingProduct(null);
     };
 
-    const saveProduct = (updatedProduct: Product) => {
-        setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
-        setEditingProduct(null);
+    const saveProduct = async (updatedProduct: Product) => {
+        try {
+            const response = await fetch(`https://localhost:5000/api/ProductsListing/${updatedProduct.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(updatedProduct),
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            setProducts(products.map(p => p.id === updatedProduct.id ? updatedProduct : p));
+            setEditingProduct(null);
+        } catch (error) {
+            console.error('Failed to update product:', error);
+        }
     };
 
-    const deleteProduct = (id: number) => {
-        setProducts(products.filter(p => p.id !== id));
-        setEditingProduct(null);
+    const deleteProduct = async (id: number) => {
+        try {
+            const response = await fetch(`https://localhost:5000/api/ProductsListing/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            setProducts(products.filter(p => p.id !== id));
+            setEditingProduct(null);
+        } catch (error) {
+            console.error('Failed to delete product:', error);
+        }
     };
 
-    const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
         if (editingProduct) {
             setEditingProduct({
                 ...editingProduct,
-                [e.target.name]: e.target.value,
+                [name]: value,
             });
         }
     };
 
     const ProductCard: React.FC<{ product: Product }> = ({ product }) => (
-        <article className={styles.productCard}>
-            <img src={product.image} alt={product.name} className={styles.productImage} />
+        <article className={styles.productCard} key={product.id}>
+            <img 
+                src={product.image ? `${BASE_URL}${product.image}` : '/default-image.jpg'} 
+                alt={product.displayName} 
+                className={styles.productImage} 
+            />
             <div className={styles.productInfo}>
-                <h2 className={styles.productTitle}>{product.name}</h2>
-                <p className={styles.productDescription}>{product.description}</p>
-                <span className={styles.productPrice}>{product.price}</span>
+                <h2 className={styles.productTitle}>Name: {product.displayName}</h2>
+                <p className={styles.productDescription}>Description: {product.description}</p>
+                <span className={styles.productPrice}>Price: {product.price}</span>
                 <div className={styles.buttonContainer}>
                     <button onClick={() => startEditing(product)}>Edit</button>
                     <button onClick={() => deleteProduct(product.id)} className={styles.deleteButton}>Delete</button>
@@ -55,12 +101,6 @@ const ProductsPage: React.FC = () => {
             </div>
         </article>
     );
-    interface Props {
-        editingProduct: Product | null;
-        onSave: (updatedProduct: Product) => void;
-        onCancel: () => void;
-        onClose: () => void;
-    }
 
     const EditProduct: React.FC = () => {
         if (!editingProduct) return null;
@@ -71,15 +111,29 @@ const ProductsPage: React.FC = () => {
                 <form onSubmit={(e) => { e.preventDefault(); if (editingProduct) saveProduct(editingProduct); }}>
                     <label>
                         Name:
-                        <input type="text" name="name" value={editingProduct.name} onChange={handleEditChange} />
+                        <input 
+                            type="text" 
+                            name="displayName" 
+                            value={editingProduct.displayName} 
+                            onChange={handleInputChange} 
+                        />
                     </label>
                     <label>
                         Description:
-                        <textarea name="description" value={editingProduct.description} onChange={handleEditChange} />
+                        <textarea 
+                            name="description" 
+                            value={editingProduct.description} 
+                            onChange={handleInputChange} 
+                        />
                     </label>
                     <label>
                         Price:
-                        <input type="text" name="price" value={editingProduct.price} onChange={handleEditChange} />
+                        <input 
+                            type="text" 
+                            name="price" 
+                            value={editingProduct.price} 
+                            onChange={handleInputChange} 
+                        />
                     </label>
                     <button type="submit">Save</button>
                     <button type="button" className={styles.cancelButton} onClick={cancelEditing}>Cancel</button>
@@ -100,6 +154,6 @@ const ProductsPage: React.FC = () => {
             </main>
         </div>
     );
-}
+};
 
 export default ProductsPage;

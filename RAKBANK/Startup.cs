@@ -6,6 +6,7 @@ using EPiServer.Scheduler;
 using EPiServer.ServiceLocation;
 using EPiServer.Web.Routing;
 using Microsoft.OpenApi.Models;
+using RAKBANK.services;
 
 namespace RAKBANK
 {
@@ -29,6 +30,7 @@ namespace RAKBANK
             services.AddApiExplorer(new Uri("https://localhost:5000/"));
             services.AddCors(options =>
             {
+
                 options.AddDefaultPolicy(
                     builder =>
                     {
@@ -38,7 +40,16 @@ namespace RAKBANK
                             .AllowCredentials();
                     });
             });
-
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin",
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:3000") // Replace with your frontend URL
+                               .AllowAnyHeader()
+                               .AllowAnyMethod();
+                    });
+            });
             services
                 .AddContentDeliveryApi()
                 .WithSiteBasedCors();
@@ -55,6 +66,7 @@ namespace RAKBANK
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "RaK Bank", Version = "v1" });
             });
+            services.AddTransient<ProductService>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -64,7 +76,7 @@ namespace RAKBANK
             {
                 app.UseDeveloperExceptionPage();
             }
-
+            app.UseCors("AllowSpecificOrigin");
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthentication();

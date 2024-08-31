@@ -1,7 +1,12 @@
 ﻿using EPiServer.DataAccess;
+using EPiServer.Globalization;
 using EPiServer.Security;
+using EPiServer.Web.Routing;
 using Microsoft.AspNetCore.Mvc;
 using RAKBANK.Models;
+using RAKBANK.Models.Pages;
+using RAKBANK.services;
+using SiteDefinition = EPiServer.Web.SiteDefinition;
 
 namespace RAKBANK.Controller
 {
@@ -12,30 +17,93 @@ namespace RAKBANK.Controller
     {
         private readonly IContentLoader _contentLoader;
         private readonly IContentRepository _contentRepository;
-        public ProductsListingController(IContentLoader contentLoader, IContentRepository contentRepository)
+        private readonly SiteDefinition _siteDefinition;
+        private readonly ProductService _productService;
+        private readonly UrlResolver _urlResolver;
+
+
+        public ProductsListingController(IContentLoader contentLoader, 
+            IContentRepository contentRepository,
+            SiteDefinition siteDefinition,
+            ProductService productService,
+            UrlResolver urlResolver)
         {
             _contentLoader = contentLoader;
             _contentRepository = contentRepository;
+            _siteDefinition = siteDefinition;
+            _productService = productService;
+            _urlResolver = urlResolver;
         }
-
+        /// <summary>
+        /// API to Retrieve all of the Product Item Blocks with in inside Product Main Block Container
+        /// </summary>
+        /// <returns></returns>
         [HttpGet]
-        public ActionResult<IEnumerable<ProductsListingBlock>> GetAllProductsListingBlocks()
+        public ActionResult<IEnumerable<ProductListingViewModel>> GetAllProductsListingBlocks()
         {
-            var productsListingBlock = _contentRepository.Get<ProductsListingBlock>(new ContentReference(6));
-            int productBlockID = 0;
-            if (productsListingBlock != null)
+            dynamic productlisting = (ContentReference)null;
+            IEnumerable<ProductItemBlock> productListingChildBlock = [];
+            try
             {
-                var blockContentLink = (dynamic)productsListingBlock;
-                var themeblockContentLinkitem = (ContentReference)blockContentLink.GetType().GetProperty("ContentLink").GetValue(blockContentLink, null);
-                productBlockID = themeblockContentLinkitem.ID;
+                var productsListingBlock = _contentRepository.Get<StartPage>(new ContentReference(_siteDefinition.StartPage.ID));
+                productlisting = _productService.BuildProductListTab(productsListingBlock.ProductListingArea,ContentLanguage.PreferredCulture, _contentRepository);
+               
             }
-            var productListingChildBlock = _contentRepository.GetChildren<ProductItemBlock>(new ContentReference(6));
-            return Ok();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception message is {ex.Message} and StackTrace is {ex.StackTrace}");
+            }
+            return Ok(productlisting);
         }
+        /// <summary>
+        /// Post product into the CMS and add reference in the Product Listing Block main container
+        /// </summary>
+        /// <param name="p_ProductRequestDto"></param>
+        /// <returns></returns>
+        [HttpPut("{id}")]
+        public ActionResult<ProductItemBlock> UpdateProduct([FromBody] ProductRequestDto p_ProductRequestDto)
+        {
+            dynamic res = (ContentReference)null;
+            try
+            {
+                if (p_ProductRequestDto == null)
+                {
+                    return BadRequest("Product is null.");
+                }
 
+                if (!ModelState.IsValid)
+                {
+                    return BadRequest(ModelState);
+                }
+                //var startpage = _contentRepository.Get<StartPage>(new ContentReference(_siteDefinition.StartPage.ID));
+                //var productsListingBlock = _contentRepository.GetChildren<ProductItemBlock>(startpage.ProductListingArea);
+                //var ProductItem=productsListingBlock.SelectMany(x => x.childProducts)
+                //                 .FirstOrDefault(cp => cp.id == p_ProductRequestDto.id);
+              
+                var ProductItem = _contentRepository.Get<ProductItemBlock>(new ContentReference(p_ProductRequestDto.id))
+                    .CreateWritableClone() as ProductItemBlock;
+                ProductItem.DisplayName = p_ProductRequestDto.DisplayName;
+                ProductItem.Description = p_ProductRequestDto.Description;
+                ProductItem.price = p_ProductRequestDto.price;
+                //ProductItem.image = p_ProductRequestDto.Image;
+
+                var SaveProductItems = _contentRepository.Save((IContent)ProductItem, SaveAction.Publish, AccessLevel.NoAccess);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Exception message is {ex.Message} and StackTrace is {ex.StackTrace}");
+            }
+            return CreatedAtAction(nameof(UpdateProduct), new { ContentReference = res }, p_ProductRequestDto);
+        }
+        /// <summary>
+        /// To Update an existing Product Item
+        /// </summary>
+        /// <param name="p_ProductRequestDto"></param>
+        /// <returns></returns>
         [HttpPost]
         public ActionResult<ProductItemBlock> PostProduct([FromBody] ProductRequestDto p_ProductRequestDto)
         {
+            dynamic res = (ContentReference)null;
             try
             {
                 if (p_ProductRequestDto == null)
@@ -48,11 +116,10 @@ namespace RAKBANK.Controller
                     return BadRequest(ModelState);
                 }
                 var Product = _contentRepository.Get<ProductsListingBlock>(new ContentReference(15)).CreateWritableClone() as ProductsListingBlock;
-                var ProductItem = _contentRepository.GetDefault<ProductItemBlock>(new ContentReference(15));
-                //var result = _contentRepository.GetChildren<ProductItemBlock>(new ContentReference(23));
+                var ProductItem = _contentRepository.Get<ProductItemBlock>(new ContentReference(p_ProductRequestDto.id));
                 ProductItem.DisplayName = p_ProductRequestDto.DisplayName;
                 ProductItem.Description = p_ProductRequestDto.Description;
-                ProductItem.imag = p_ProductRequestDto.Image;
+                //ProductItem.image = p_ProductRequestDto.Image;
                 var unboxObject = (IContent)ProductItem;
                 unboxObject.Name = "RT";
                 var SaveProductItems = _contentRepository.Save((IContent)unboxObject, SaveAction.Publish, AccessLevel.NoAccess);
@@ -62,27 +129,30 @@ namespace RAKBANK.Controller
                     ContentLink = SaveProductItems
                 };
                 Product.ProductArea.Items.Add(AddblockItem);
-                var res = _contentRepository.Save((IContent)Product, SaveAction.Publish, AccessLevel.NoAccess);
+                res = _contentRepository.Save((IContent)Product, SaveAction.Publish, AccessLevel.NoAccess);
 
             }
             catch (Exception ex)
             {
-
-                throw;
+                Console.WriteLine($"Exception message is {ex.Message} and StackTrace is {ex.StackTrace}");
             }
-            return CreatedAtAction(nameof(PostProduct), new { id = 1 }, p_ProductRequestDto);
+            return CreatedAtAction(nameof(PostProduct), new { ContentReference = res }, p_ProductRequestDto);
         }
-
+        /// <summary>
+        /// An api to delete the Product List Block
+        /// </summary>
+        /// <param name="p_ProductRequestDto"></param>
+        /// <returns></returns>
         [HttpDelete]
         public ActionResult<ProductItemBlock> DeleteProduct([FromBody] ProductRequestDto p_ProductRequestDto)
         {
             try
             {
-                if (p_ProductRequestDto.ContentLink == null)
+                if (p_ProductRequestDto.id == null)
                 {
                     return BadRequest("Product is null.");
                 }
-                var BlockToBeDeleted = _contentLoader.Get<ProductItemBlock>(new ContentReference(p_ProductRequestDto.ContentLink));
+                var BlockToBeDeleted = _contentLoader.Get<ProductItemBlock>(new ContentReference(p_ProductRequestDto.id));
                 dynamic BlockDeletedReference = (ContentReference)null;
                 if (BlockToBeDeleted != null)
                 {
@@ -96,13 +166,13 @@ namespace RAKBANK.Controller
                 Product.ProductArea.Items.Remove(itemToRemove);
                 var blockReferenceRemoved = _contentRepository.Save((IContent)Product, EPiServer.DataAccess.SaveAction.Publish, EPiServer.Security.AccessLevel.NoAccess);
                 _contentRepository.Delete(BlockDeletedReference, true, AccessLevel.NoAccess);
+                return Ok("The item with that id is deleted");
             }
             catch (Exception ex)
             {
-
-                throw;
+                Console.WriteLine($"Exception message is {ex.Message} and StackTrace is {ex.StackTrace}");
             }
-            return CreatedAtAction(nameof(PostProduct), new { id = 1 }, p_ProductRequestDto);
+            return Ok("The item with that id has not beed deleted");
         }
     }
 }

@@ -26,4 +26,14 @@ namespace RAKBANK.Models
         public virtual required ContentArea ProductArea { get; set; }
 
     }
+    public class ProductListingViewModel
+    {
+        public ProductListingViewModel()
+        {
+            childProducts = [];
+        }
+        public string DisplayName { get; set; }
+        public string Description { get; set; }
+        public List<ProductItemViewModel> childProducts { get; set; }
+    }
 }
