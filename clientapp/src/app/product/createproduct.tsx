@@ -18,8 +18,8 @@ const CreateProduct: React.FC<CreateProductProps> = ({ showCreateForm, setShowCr
         price: '',
         image: ''
     });
-
-    const router = useRouter(); // Correct usage of useRouter
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const router = useRouter();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
@@ -29,36 +29,57 @@ const CreateProduct: React.FC<CreateProductProps> = ({ showCreateForm, setShowCr
         }));
     };
 
-    const createProduct = async (product: Partial<Product>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImageFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setNewProduct(prev => ({
+                    ...prev,
+                    image: (reader.result as string).split(',')[1] // Only the Base64 data, excluding the `data:image/png;base64,` prefix
+                }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const createProduct = async () => {
         try {
+            const formData = new FormData();
+            formData.append('displayName', newProduct.displayName || '');
+            formData.append('description', newProduct.description || '');
+            formData.append('price', newProduct.price || '');
+            if (imageFile) {
+                formData.append('image', imageFile);
+            }
+    
             const response = await fetch('https://localhost:5000/api/ProductsListing/CreateProduct', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(product),
+                body: formData,
             });
-
+    
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                const errorText = await response.text();
+                throw new Error(`Network response was not ok: ${errorText}`);
             }
-
-            const newProduct: Product = await response.json();
-            setProducts(prev => [...prev, newProduct]);
-
+    
+            const createdProduct: Product = await response.json();
+            setProducts(prev => [...prev, createdProduct]);
+    
             setNewProduct({
                 displayName: '',
                 description: '',
                 price: '',
                 image: ''
             });
+            setImageFile(null);
             setShowCreateForm(false);
-            router.push('/product'); // Redirect to product listing page
+            router.push('/product');
         } catch (error) {
             console.error('Failed to create product:', error);
         }
     };
-
     if (!showCreateForm) return null;
 
     return (
@@ -66,12 +87,7 @@ const CreateProduct: React.FC<CreateProductProps> = ({ showCreateForm, setShowCr
             <h2>Create New Product</h2>
             <form onSubmit={(e) => {
                 e.preventDefault();
-                createProduct({
-                    displayName: newProduct.displayName || '',
-                    description: newProduct.description || '',
-                    price: newProduct.price || '',
-                    image: newProduct.image || ''
-                });
+                createProduct();
             }}>
                 <label>
                     Name:
@@ -97,6 +113,16 @@ const CreateProduct: React.FC<CreateProductProps> = ({ showCreateForm, setShowCr
                         name="price"
                         value={newProduct.price || ''}
                         onChange={handleInputChange}
+                    />
+                </label>
+                <label>
+                    Upload Product Image:
+                    <input
+                        type="file"
+                        id="imageFile"
+                        name="imageFile"
+                        accept="image/*"
+                        onChange={handleFileChange}
                     />
                 </label>
                 <button type="submit">Create</button>

@@ -82,6 +82,7 @@ namespace RAKBANK
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseSwagger();
+            app.UseSwaggerUI();
             app.UseCors();
             app.UseSwaggerUI( c =>
             {

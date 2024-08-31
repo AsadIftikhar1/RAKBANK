@@ -3,6 +3,7 @@ using EPiServer.Globalization;
 using EPiServer.Security;
 using EPiServer.Web.Routing;
 using Microsoft.AspNetCore.Mvc;
+using RAKBANK.Extensions;
 using RAKBANK.Models;
 using RAKBANK.Models.Pages;
 using RAKBANK.services;
@@ -20,9 +21,8 @@ namespace RAKBANK.Controller
         private readonly SiteDefinition _siteDefinition;
         private readonly ProductService _productService;
         private readonly UrlResolver _urlResolver;
-
-
-        public ProductsListingController(IContentLoader contentLoader, 
+  
+        public ProductsListingController(IContentLoader contentLoader,
             IContentRepository contentRepository,
             SiteDefinition siteDefinition,
             ProductService productService,
@@ -46,8 +46,8 @@ namespace RAKBANK.Controller
             try
             {
                 var productsListingBlock = _contentRepository.Get<StartPage>(new ContentReference(_siteDefinition.StartPage.ID));
-                productlisting = _productService.BuildProductListTab(productsListingBlock.ProductListingArea,ContentLanguage.PreferredCulture, _contentRepository);
-               
+                productlisting = _productService.BuildProductListTab(productsListingBlock.ProductListingArea, ContentLanguage.PreferredCulture, _contentRepository);
+
             }
             catch (Exception ex)
             {
@@ -80,7 +80,7 @@ namespace RAKBANK.Controller
                     .CreateWritableClone() as ProductItemBlock;
                 ProductItem.DisplayName = p_ProductRequestDto?.DisplayName;
                 ProductItem.Description = p_ProductRequestDto?.Description;
-                ProductItem.price = p_ProductRequestDto?.price;
+                //  ProductItem.price = p_ProductRequestDto?.price;
                 //ProductItem.image = p_ProductRequestDto.Image;
 
                 var SaveProductItems = _contentRepository.Save((IContent)ProductItem, SaveAction.Publish, AccessLevel.NoAccess);
@@ -97,27 +97,26 @@ namespace RAKBANK.Controller
         /// <param name="p_ProductRequestDto"></param>
         /// <returns></returns>
         [HttpPost("CreateProduct")]
-        public ActionResult<ProductItemBlock> PostProduct([FromBody] ProductRequestDto p_ProductRequestDto)
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public ActionResult<ProductItemBlock> PostProduct(
+        [FromForm] string displayName,
+        [FromForm] string description,
+        [FromForm] string price,
+        [FromForm] IFormFile image)
         {
             dynamic res = (ContentReference)null;
             try
             {
-                if (p_ProductRequestDto == null)
-                {
-                    return BadRequest("Product is null.");
-                }
-
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
+                var bytes=ImageUploadService.ConvertToByteArrayAsync(image);
+                var filename = displayName;
+                var fileExtension = ImageUploadService.GetFileExtension(image);
                 var Product = _contentRepository.Get<ProductsListingBlock>(new ContentReference(15)).CreateWritableClone() as ProductsListingBlock;
                 var ProductItem = _contentRepository.GetDefault<ProductItemBlock>(new ContentReference(15));
-                ProductItem.DisplayName = p_ProductRequestDto.DisplayName;
-                ProductItem.Description = p_ProductRequestDto.Description;
+                ProductItem.DisplayName = displayName;
+                ProductItem.Description = description;
                 //ProductItem.image = p_ProductRequestDto.Image;
                 var unboxObject = (IContent)ProductItem;
-                unboxObject.Name = "RT";
+                unboxObject.Name = displayName;
                 var SaveProductItems = _contentRepository.Save((IContent)unboxObject, SaveAction.Publish, AccessLevel.NoAccess);
                 var AddblockItem = new ContentAreaItem
                 {
@@ -125,14 +124,18 @@ namespace RAKBANK.Controller
                     ContentLink = SaveProductItems
                 };
                 Product.ProductArea.Items.Add(AddblockItem);
-                res = _contentRepository.Save((IContent)Product, SaveAction.Publish, AccessLevel.NoAccess);
+                var SavedProductItem = _contentRepository.Get<ProductItemBlock>(SaveProductItems).CreateWritableClone() as ProductItemBlock;
+                var imageReference = ImageUploadService.UploadImageFromUrl(bytes, filename, fileExtension, SaveProductItems);
+                SavedProductItem.image = imageReference;
+                var addingRefernceToTheProductItemBlockOfImage = _contentRepository.Save((IContent)SavedProductItem, SaveAction.Publish, AccessLevel.NoAccess);
+                var addingReferencetoTheProductListingBlock = _contentRepository.Save((IContent)Product, SaveAction.Publish, AccessLevel.NoAccess);
 
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception message is {ex.Message} and StackTrace is {ex.StackTrace}");
             }
-            return CreatedAtAction(nameof(PostProduct), new { ContentReference = res }, p_ProductRequestDto);
+            return CreatedAtAction(nameof(PostProduct), new { ContentReference = res });
         }
         /// <summary>
         /// An api to delete the Product List Block

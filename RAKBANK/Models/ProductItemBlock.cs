@@ -28,11 +28,11 @@ namespace RAKBANK.Models
     }
     public class ProductItemViewModel
     {
-        public string id { get; set; }
-        public string DisplayName { get; set; }
-        public string Description { get; set; }
-        public string image { get; set; }
-        public string price { get; set; }
+        public string? id { get; set; }
+        public string? DisplayName { get; set; }
+        public string? Description { get; set; }
+        public string? image { get; set; }
+        public string? price { get; set; }
     }
     public class ProductRequestDto
     {
@@ -40,6 +40,6 @@ namespace RAKBANK.Models
         public string? DisplayName { get; set; }
         public string? Description { get; set; }
         public string? Image { get; set; }
-        public string? price { get; set; }
+        public IFormFile? price { get; set; }
     }
 }

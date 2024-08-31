@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("APIExplorer")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+a467f051f505e4cc5ba090e1d4959791bf10fca1")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0bbb41f222421018ab53d193b96b4896999e088d")]
 [assembly: System.Reflection.AssemblyProductAttribute("APIExplorer")]
 [assembly: System.Reflection.AssemblyTitleAttribute("APIExplorer")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
