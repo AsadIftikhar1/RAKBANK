@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Foundation.ContentActionsApi.Infrastructure
+namespace RAKBANK.ContentActionsAPI.Infrastructure
 {
     public class ContentActionApiResult<T> : ActionResult
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace Foundation.ContentActionsApi.Infrastructure
+namespace RAKBANK.ContentActionsAPI.Infrastructure
 {
     public class LanguageRequest
     {

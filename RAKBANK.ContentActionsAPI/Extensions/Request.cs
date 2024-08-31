@@ -1,5 +1,5 @@
 ﻿using EPiServer.Globalization;
-using Foundation.ContentActionsApi.Infrastructure;
+using RAKBANK.ContentActionsAPI.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Globalization;

@@ -10,10 +10,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Foundation.ContentActionsApi.Controller;
+using RAKBANK.ContentActionsAPI.Controller;
 using Microsoft.AspNetCore.Http.Extensions;
 
-namespace Foundation.ContentActionsApi.Infrastructure
+namespace RAKBANK.ContentActionsAPI.Infrastructure
 {
     public class RouteTransformer : DynamicRouteValueTransformer
     {

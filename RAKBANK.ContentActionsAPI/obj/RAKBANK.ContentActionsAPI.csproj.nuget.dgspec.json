@@ -46,37 +46,21 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
-            "EPiServer.CMS.AspNetCore": {
+            "EPiServer.CMS": {
               "target": "Package",
-              "version": "[12.9.0, )"
-            },
-            "EPiServer.CMS.AspNetCore.Routing": {
-              "target": "Package",
-              "version": "[12.9.0, )"
-            },
-            "EPiServer.CMS.AspNetCore.Templating": {
-              "target": "Package",
-              "version": "[12.9.0, )"
-            },
-            "EPiServer.CMS.Core": {
-              "target": "Package",
-              "version": "[12.9.0, )"
-            },
-            "EPiServer.CMS.UI.Core": {
-              "target": "Package",
-              "version": "[12.13.2, )"
+              "version": "[12.31.1, )"
             },
             "EPiServer.ContentDeliveryApi.Core": {
               "target": "Package",
-              "version": "[3.5.0, )"
-            },
-            "EPiServer.Framework": {
-              "target": "Package",
-              "version": "[12.9.0, )"
+              "version": "[3.11.0, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",
-              "version": "[13.0.1, )"
+              "version": "[13.0.3, )"
+            },
+            "System.Text.Json": {
+              "target": "Package",
+              "version": "[8.0.4, )"
             }
           },
           "imports": [
