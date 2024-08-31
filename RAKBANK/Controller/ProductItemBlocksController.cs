@@ -96,7 +96,7 @@ namespace RAKBANK.Controller
         /// </summary>
         /// <param name="p_ProductRequestDto"></param>
         /// <returns></returns>
-        [HttpPost("{id}")]
+        [HttpPost("CreateProduct")]
         public ActionResult<ProductItemBlock> PostProduct([FromBody] ProductRequestDto p_ProductRequestDto)
         {
             dynamic res = (ContentReference)null;
@@ -112,7 +112,7 @@ namespace RAKBANK.Controller
                     return BadRequest(ModelState);
                 }
                 var Product = _contentRepository.Get<ProductsListingBlock>(new ContentReference(15)).CreateWritableClone() as ProductsListingBlock;
-                var ProductItem = _contentRepository.Get<ProductItemBlock>(new ContentReference(p_ProductRequestDto.id));
+                var ProductItem = _contentRepository.GetDefault<ProductItemBlock>(new ContentReference(15));
                 ProductItem.DisplayName = p_ProductRequestDto.DisplayName;
                 ProductItem.Description = p_ProductRequestDto.Description;
                 //ProductItem.image = p_ProductRequestDto.Image;

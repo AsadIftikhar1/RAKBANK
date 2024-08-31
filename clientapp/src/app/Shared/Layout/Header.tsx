@@ -9,10 +9,10 @@ const Header: React.FC = () => {
             <nav>
                 <ul>
                     <li>
-                        <Link href="/">Home</Link>
+                        <Link href="/">Create Product</Link>
                     </li>
                     <li>
-                        <Link href="/product">Products</Link>
+                        <Link href="/product">Product Listing</Link>
                     </li>
                 </ul>
             </nav>

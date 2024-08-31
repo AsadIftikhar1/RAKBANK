@@ -4,6 +4,7 @@ import { Product } from '../interfaces/product';
 import { ProductListing } from '../interfaces/product';
 import styles from '../css/products.module.css';
 import { useEffect, useState } from 'react';
+import CreateProduct from './createproduct';
 
 const ProductsPage: React.FC = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -159,6 +160,7 @@ const ProductsPage: React.FC = () => {
             </main>
         </div>
     );
+    
 };
 
 export default ProductsPage;
