@@ -1,4 +1,7 @@
-﻿using EPiServer.DataAccess;
+﻿using crypto;
+using EPiServer;
+using EPiServer.Core;
+using EPiServer.DataAccess;
 using EPiServer.Security;
 using Microsoft.AspNetCore.Mvc;
 using RAKBANK.Models;
@@ -65,6 +68,38 @@ namespace RAKBANK.Controller
                 Product.ProductArea.Items.Add(AddblockItem);
                  var res= _contentRepository.Save((IContent)Product, SaveAction.Publish, AccessLevel.NoAccess);
 
+            }
+            catch (Exception ex)
+            {
+
+                throw;
+            }
+            return CreatedAtAction(nameof(PostProduct), new { id = 1 }, p_ProductRequestDto);
+        }
+
+        [HttpDelete]
+        public ActionResult<ProductItemBlock> DeleteProduct([FromBody] ProductRequestDto p_ProductRequestDto)
+        {
+            try
+            {
+                if (p_ProductRequestDto.ContentLink == null)
+                {
+                    return BadRequest("Product is null.");
+                }
+                var BlockToBeDeleted = _contentLoader.Get<ProductItemBlock>(new ContentReference(p_ProductRequestDto.ContentLink));
+                dynamic BlockDeletedReference = (ContentReference)null;
+                if (BlockToBeDeleted != null)
+                {
+                    var blockContentLink = (dynamic)BlockToBeDeleted;
+                    BlockDeletedReference = (ContentReference)blockContentLink.GetType().GetProperty("ContentLink").GetValue(blockContentLink, null);
+                }
+                var Product = _contentRepository.Get<ProductsListingBlock>(new ContentReference(15)).CreateWritableClone() as ProductsListingBlock;
+                var contentArea = Product.ProductArea;
+                var itemToRemove = contentArea.Items.FirstOrDefault(x => x.ContentLink.ID == BlockDeletedReference.ID);
+
+                Product.ProductArea.Items.Remove(itemToRemove);
+                var blockReferenceRemoved=_contentRepository.Save((IContent)Product, EPiServer.DataAccess.SaveAction.Publish, EPiServer.Security.AccessLevel.NoAccess);
+                _contentRepository.Delete(BlockDeletedReference, true, AccessLevel.NoAccess);
             }
             catch (Exception ex)
             {

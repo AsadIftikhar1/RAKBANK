@@ -24,6 +24,7 @@ namespace RAKBANK.Models
 
     public class ProductRequestDto
     {
+        public string ContentLink { get; set; }
         public string DisplayName { get; set; }
         public string Description { get; set; }
         public string Image { get; set; }
