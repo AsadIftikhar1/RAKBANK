@@ -13,11 +13,23 @@ interface EditProductProps {
 
 const EditProduct: React.FC<EditProductProps> = ({ editingProduct, handleInputChange, saveProduct, cancelEditing }) => {
     if (!editingProduct) return null;
-
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+    
+        // Perform custom validation
+        if (!editingProduct.displayName || !editingProduct.description || !editingProduct.price) {
+            alert("Please fill out all required fields.");
+            return;
+        }
+    
+        if (editingProduct) {
+            saveProduct(editingProduct);
+        }
+    };
     return (
         <div className={styles.editContainer}>
             <h2>Edit Product</h2>
-            <form onSubmit={(e) => { e.preventDefault(); if (editingProduct) saveProduct(editingProduct); }}>
+             <form onSubmit={handleSubmit}>
                 <label>
                     Name:
                     <input 

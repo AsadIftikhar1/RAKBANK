@@ -19,6 +19,7 @@ const CreateProduct: React.FC<CreateProductProps> = ({ showCreateForm, setShowCr
         image: ''
     });
     const [imageFile, setImageFile] = useState<File | null>(null);
+    const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const router = useRouter();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -44,7 +45,21 @@ const CreateProduct: React.FC<CreateProductProps> = ({ showCreateForm, setShowCr
         }
     };
 
+    const validateForm = () => {
+        const newErrors: { [key: string]: string } = {};
+        if (!newProduct.displayName) newErrors.displayName = 'Product name is required.';
+        if (!newProduct.description) newErrors.description = 'Description is required.';
+        if (!newProduct.price || isNaN(Number(newProduct.price))) newErrors.price = 'Valid price is required.';
+        return newErrors;
+    };
+
     const createProduct = async () => {
+        const validationErrors = validateForm();
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+
         try {
             const formData = new FormData();
             formData.append('displayName', newProduct.displayName || '');
@@ -80,6 +95,7 @@ const CreateProduct: React.FC<CreateProductProps> = ({ showCreateForm, setShowCr
             console.error('Failed to create product:', error);
         }
     };
+
     if (!showCreateForm) return null;
 
     return (
@@ -96,7 +112,9 @@ const CreateProduct: React.FC<CreateProductProps> = ({ showCreateForm, setShowCr
                         name="displayName"
                         value={newProduct.displayName || ''}
                         onChange={handleInputChange}
+                        required
                     />
+                    {errors.displayName && <p className={styles.error}>{errors.displayName}</p>}
                 </label>
                 <label>
                     Description:
@@ -104,7 +122,9 @@ const CreateProduct: React.FC<CreateProductProps> = ({ showCreateForm, setShowCr
                         name="description"
                         value={newProduct.description || ''}
                         onChange={handleInputChange}
+                        required
                     />
+                    {errors.description && <p className={styles.error}>{errors.description}</p>}
                 </label>
                 <label>
                     Price:
@@ -113,7 +133,11 @@ const CreateProduct: React.FC<CreateProductProps> = ({ showCreateForm, setShowCr
                         name="price"
                         value={newProduct.price || ''}
                         onChange={handleInputChange}
+                        required
+                        pattern="^\d+(\.\d{1,2})?$"
+                        title="Enter a valid price (e.g., 10 or 10.99)"
                     />
+                    {errors.price && <p className={styles.error}>{errors.price}</p>}
                 </label>
                 <label>
                     Upload Product Image:
