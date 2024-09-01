@@ -37,8 +37,4 @@
 	  <None Remove="Swagger\**" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <ProjectReference Include="..\APIExplorer\APIExplorer.csproj" />
-	  <ProjectReference Include="..\RAKBANK.ContentActionsAPI\RAKBANK.ContentActionsAPI.csproj" />
-	</ItemGroup>
 </Project>
