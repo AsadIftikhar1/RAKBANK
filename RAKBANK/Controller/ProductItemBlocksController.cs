@@ -92,7 +92,7 @@ namespace RAKBANK.Controller
                     .CreateWritableClone() as ProductItemBlock;
                 ProductItem.DisplayName = p_ProductRequestDto?.DisplayName;
                 ProductItem.Description = p_ProductRequestDto?.Description;
-                //  ProductItem.price = p_ProductRequestDto?.price;
+                ProductItem.price = p_ProductRequestDto?.price;
                 //ProductItem.image = p_ProductRequestDto.Image;
 
                 var SaveProductItems = _contentRepository.Save((IContent)ProductItem, SaveAction.Publish, AccessLevel.NoAccess);
@@ -126,7 +126,7 @@ namespace RAKBANK.Controller
                 var ProductItem = _contentRepository.GetDefault<ProductItemBlock>(new ContentReference(15));
                 ProductItem.DisplayName = displayName;
                 ProductItem.Description = description;
-                //ProductItem.image = p_ProductRequestDto.Image;
+                ProductItem.price = price;
                 var unboxObject = (IContent)ProductItem;
                 unboxObject.Name = displayName;
                 var SaveProductItems = _contentRepository.Save((IContent)unboxObject, SaveAction.Publish, AccessLevel.NoAccess);

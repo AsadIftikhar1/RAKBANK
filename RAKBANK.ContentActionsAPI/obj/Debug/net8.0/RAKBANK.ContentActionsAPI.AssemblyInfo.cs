@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("RAKBANK.ContentActionsAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8d1b3a245b325147875061c7ba24e9e1f990cc2d")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+08f67e821ee9fb2e534423c1e6ab88b547557227")]
 [assembly: System.Reflection.AssemblyProductAttribute("RAKBANK.ContentActionsAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("RAKBANK.ContentActionsAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

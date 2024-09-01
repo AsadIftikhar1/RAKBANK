@@ -1,7 +1,7 @@
 ﻿using EPiServer.Framework.Blobs;
 using EPiServer.Framework.DataAnnotations;
 
-namespace ADGM_Migration.Features.Media
+namespace RAKBANK.Features.Media
 {
 	[ContentType(DisplayName = "SVG File",
 		// your code will have a GUID

@@ -4,7 +4,7 @@ using EPiServer.DataAccess;
 using EPiServer.Framework.Blobs;
 using EPiServer.Security;
 using static System.Runtime.InteropServices.JavaScript.JSType;
-using ADGM_Migration.Features.Media;
+using RAKBANK.Features.Media;
 using EPiServer.ServiceLocation;
 
 namespace RAKBANK.Extensions

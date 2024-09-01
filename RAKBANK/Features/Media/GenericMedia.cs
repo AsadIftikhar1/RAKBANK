@@ -1,7 +1,7 @@
 using EPiServer.Framework.DataAnnotations;
 using System.ComponentModel.DataAnnotations;
 
-namespace ADGM_Migration.Features.Media
+namespace RAKBANK.Features.Media
 {
 	[ContentType(
 		DisplayName = "GenericMedia",

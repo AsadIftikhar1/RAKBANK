@@ -1,4 +1,4 @@
-﻿namespace ADGM_Migration.Models.Media
+﻿namespace RAKBANK.Models.Media
 {
 	[ContentType(DisplayName = "Any File",
 		// your code will have a GUID 
